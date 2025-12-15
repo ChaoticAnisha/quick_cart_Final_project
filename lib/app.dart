@@ -26,7 +26,7 @@ class App extends StatelessWidget {
         '/onboarding3': (context) => const OnboardingThree(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
-        '/home': (context) => const DashboardScreen(),
+        '/home': (context) => const DashboardScreen()
       },
     );
   }
