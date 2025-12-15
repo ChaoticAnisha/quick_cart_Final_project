@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-// Assuming your UiHelper is in this path, adjust as needed
-// import 'package:your_app/widgets/uihelper.dart';
 
+// ==================== UI HELPER CLASS ====================
 class UiHelper {
   static CustomImage({required String img}) {
     return Image.asset("assets/images/$img");
@@ -32,7 +31,7 @@ class UiHelper {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         color: Colors.white,
-        border: Border.all(color: Color(0XFFC5C5C5)),
+        border: Border.all(color: Color(0xFFFFD700)),
       ),
       child: TextField(
         controller: controller,
@@ -54,13 +53,13 @@ class UiHelper {
         width: 30,
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: Color(0XFF27AF34)),
+          border: Border.all(color: Color(0xFFFFA500)),
           borderRadius: BorderRadius.circular(4),
         ),
         child: Center(
           child: Text(
             "Add",
-            style: TextStyle(fontSize: 8, color: Color(0XFF27AF34)),
+            style: TextStyle(fontSize: 8, color: Color(0xFFFFA500)),
           ),
         ),
       ),
@@ -126,19 +125,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // Handle navigation based on index
     switch (index) {
       case 0:
-
+        // Already on Dashboard
         break;
       case 1:
-        // Category
-        // Navigator.pushNamed(context, '/category');
+        // Navigate to Category
+        Navigator.pushNamed(context, '/category');
         break;
       case 2:
-        // Print/Cart
-        // Navigator.pushNamed(context, '/cart');
+        // Navigate to Cart/Print
+        Navigator.pushNamed(context, '/cart');
         break;
       case 3:
-        // Profile
-        // Navigator.pushNamed(context, '/profile');
+        // Navigate to Profile
+        Navigator.pushNamed(context, '/profile');
         break;
     }
   }
@@ -150,13 +149,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           SizedBox(height: 40),
 
-          // Header Section with Red Background
+          // Header Section with Amber/Gold Background
           Stack(
             children: [
               Container(
                 height: 190,
                 width: double.infinity,
-                color: Color(0XFFEC0505),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                  ),
+                ),
                 child: Column(
                   children: [
                     SizedBox(height: 30),
@@ -165,7 +170,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         SizedBox(width: 20),
                         UiHelper.CustomText(
                           text: "QuickCart in",
-                          color: Color(0XFFFFFFFF),
+                          color: Color(0xFFFFFFFF),
                           fontweight: FontWeight.bold,
                           fontsize: 15,
                           fontfamily: "bold",
@@ -177,7 +182,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         SizedBox(width: 20),
                         UiHelper.CustomText(
                           text: "16 minutes",
-                          color: Color(0XFFFFFFFF),
+                          color: Color(0xFFFFFFFF),
                           fontweight: FontWeight.bold,
                           fontsize: 20,
                           fontfamily: "bold",
@@ -189,13 +194,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         SizedBox(width: 20),
                         UiHelper.CustomText(
                           text: "HOME ",
-                          color: Color(0XFFFFFFFF),
+                          color: Color(0xFFFFFFFF),
                           fontweight: FontWeight.bold,
                           fontsize: 14,
                         ),
                         UiHelper.CustomText(
                           text: "- Your Location Address",
-                          color: Color(0XFFFFFFFF),
+                          color: Color(0xFFFFFFFF),
                           fontweight: FontWeight.bold,
                           fontsize: 14,
                         ),
@@ -209,8 +214,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 bottom: 100,
                 child: CircleAvatar(
                   radius: 15,
-                  backgroundColor: Colors.black,
-                  child: Icon(Icons.person, color: Colors.white, size: 20),
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.person, color: Color(0xFFFFA500), size: 20),
                 ),
               ),
               Positioned(
@@ -224,11 +229,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
           // Divider
           Container(height: 1, width: double.infinity, color: Colors.white),
 
-          // Mega Diwali Sale Section
+          // Mega Diwali Sale Section with Amber/Gold
           Container(
             height: 196,
             width: double.infinity,
-            color: Color(0XFFEC0505),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+              ),
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -264,7 +275,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             height: 108,
                             width: 86,
                             decoration: BoxDecoration(
-                              color: Color(0XFFEAD3D3),
+                              color: Colors.white.withOpacity(0.9),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Column(
@@ -335,7 +346,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             SizedBox(width: 3),
                             UiHelper.CustomText(
                               text: "${categoryData[index]["time"]} MINS",
-                              color: Color(0XFF9C9C9C),
+                              color: Color(0xFF9C9C9C),
                               fontweight: FontWeight.normal,
                               fontsize: 10,
                             ),
@@ -348,7 +359,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             SizedBox(width: 3),
                             UiHelper.CustomText(
                               text: categoryData[index]["price"].toString(),
-                              color: Color(0XFF9C9C9C),
+                              color: Color(0xFF9C9C9C),
                               fontweight: FontWeight.bold,
                               fontsize: 15,
                             ),
@@ -407,7 +418,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           width: 71,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10),
-                            color: Color(0XFFD9EBEB),
+                            color: Color(0xFFFFF8DC),
                           ),
                           child: UiHelper.CustomImage(
                             img: groceryKitchenData[index]["img"].toString(),
@@ -435,12 +446,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
 
-      // Bottom Navigation Bar
+      // Bottom Navigation Bar with Amber/Gold Theme
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onBottomNavTap,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Color(0XFFEC0505),
+        selectedItemColor: Color(0xFFFFA500),
         unselectedItemColor: Colors.grey,
         selectedFontSize: 12,
         unselectedFontSize: 12,
@@ -450,7 +461,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             icon: Icon(Icons.category),
             label: 'Category',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.print), label: 'Print'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: 'Cart',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
