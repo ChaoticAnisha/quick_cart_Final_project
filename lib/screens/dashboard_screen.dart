@@ -126,7 +126,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // Handle navigation based on index
     switch (index) {
       case 0:
-        // Home - already here
+
         break;
       case 1:
         // Category
