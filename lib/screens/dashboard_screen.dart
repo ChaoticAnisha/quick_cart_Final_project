@@ -1,88 +1,203 @@
 import 'package:flutter/material.dart';
+// Assuming your UiHelper is in this path, adjust as needed
+// import 'package:your_app/widgets/uihelper.dart';
 
-class DashboardScreen extends StatelessWidget {
+class UiHelper {
+  static CustomImage({required String img}) {
+    return Image.asset("assets/images/$img");
+  }
+
+  static CustomText({
+    required String text,
+    required Color color,
+    required FontWeight fontweight,
+    String? fontfamily,
+    required double fontsize,
+  }) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: fontsize,
+        fontFamily: fontfamily ?? "regular",
+        fontWeight: fontweight,
+        color: color,
+      ),
+    );
+  }
+
+  static CustomTextField({required TextEditingController controller}) {
+    return Container(
+      height: 40,
+      width: 360,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: Colors.white,
+        border: Border.all(color: Color(0XFFC5C5C5)),
+      ),
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          hintText: "Search 'ice-cream'",
+          prefixIcon: Image.asset("assets/images/search.png"),
+          suffixIcon: Image.asset("assets/images/mic 1.png"),
+          border: InputBorder.none,
+        ),
+      ),
+    );
+  }
+
+  static CustomButton(VoidCallback callback) {
+    return GestureDetector(
+      onTap: callback,
+      child: Container(
+        height: 18,
+        width: 30,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: Color(0XFF27AF34)),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Center(
+          child: Text(
+            "Add",
+            style: TextStyle(fontSize: 8, color: Color(0XFF27AF34)),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
   @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  TextEditingController searchController = TextEditingController();
+  int _selectedIndex = 0;
+
+  // Data for Diwali Sale section
+  var diwaliSaleData = [
+    {"img": "image 50.png", "text": "Lights, Diyas \n & Candles"},
+    {"img": "image 51.png", "text": "Diwali \n Gifts"},
+    {"img": "image 52.png", "text": "Appliances  \n & Gadgets"},
+    {"img": "image 53.png", "text": "Home \n & Living"},
+  ];
+
+  // Data for Category section
+  var categoryData = [
+    {
+      "img": "image 54.png",
+      "text": "Golden Glass\n Wooden Lid Candle (Oudh)",
+      "time": "16",
+      "price": "79",
+    },
+    {
+      "img": "image 57.png",
+      "text": "Royal Gulab Jamun\n By Bikano",
+      "time": "16",
+      "price": "149",
+    },
+    {
+      "img": "image 63.png",
+      "text": "Golden Glass\n Wooden Lid Candle (Oudh)",
+      "time": "16",
+      "price": "79",
+    },
+  ];
+
+  // Data for Grocery & Kitchen section
+  var groceryKitchenData = [
+    {"img": "image 41.png", "text": "Vegetables & \nFruits"},
+    {"img": "image 42.png", "text": "Atta, Dal & \nRice"},
+    {"img": "image 43.png", "text": "Oil, Ghee & \nMasala"},
+    {"img": "image 44 (1).png", "text": "Dairy, Bread & \nMilk"},
+    {"img": "image 45 (1).png", "text": "Biscuits & \nBakery"},
+  ];
+
+  void _onBottomNavTap(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    // Handle navigation based on index
+    switch (index) {
+      case 0:
+        // Home - already here
+        break;
+      case 1:
+        // Category
+        // Navigator.pushNamed(context, '/category');
+        break;
+      case 2:
+        // Print/Cart
+        // Navigator.pushNamed(context, '/cart');
+        break;
+      case 3:
+        // Profile
+        // Navigator.pushNamed(context, '/profile');
+        break;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    TextEditingController searchController = TextEditingController();
-
-    var data = [
-      {"img": "image 50.png", "text": "Lights, Diyas \n & Candles"},
-      {"img": "image 51.png", "text": "Diwali \n Gifts"},
-      {"img": "image 52.png", "text": "Appliances  \n & Gadgets"},
-      {"img": "image 53.png", "text": "Home \n & Living"},
-    ];
-
-    var category = [
-      {
-        "img": "image 54.png",
-        "text": "Golden Glass\n Wooden Lid Candle (Oudh)",
-      },
-      {"img": "image 57.png", "text": "Royal Gulab Jamun\n By Bikano"},
-      {
-        "img": "image 63.png",
-        "text": "Golden Glass\n Wooden Lid Candle (Oudh)",
-      },
-    ];
-
-    var groceryKitchen = [
-      {"img": "image 41.png", "text": "Vegetables & \nFruits"},
-      {"img": "image 42.png", "text": "Atta, Dal & \nRice"},
-      {"img": "image 43.png", "text": "Oil, Ghee & \nMasala"},
-      {"img": "image 44 (1).png", "text": "Dairy, Bread & \nMilk"},
-      {"img": "image 45 (1).png", "text": "Biscuits & \nBakery"},
-    ];
-
     return Scaffold(
       body: Column(
         children: [
-          const SizedBox(height: 40),
+          SizedBox(height: 40),
+
+          // Header Section with Red Background
           Stack(
             children: [
               Container(
                 height: 190,
                 width: double.infinity,
-                color: const Color(0XFFEC0505),
+                color: Color(0XFFEC0505),
                 child: Column(
                   children: [
-                    const SizedBox(height: 30),
+                    SizedBox(height: 30),
                     Row(
                       children: [
-                        const SizedBox(width: 20),
-                        _customText(
+                        SizedBox(width: 20),
+                        UiHelper.CustomText(
                           text: "QuickCart in",
-                          color: const Color(0XFFFFFFFF),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                          color: Color(0XFFFFFFFF),
+                          fontweight: FontWeight.bold,
+                          fontsize: 15,
+                          fontfamily: "bold",
                         ),
                       ],
                     ),
                     Row(
                       children: [
-                        const SizedBox(width: 20),
-                        _customText(
+                        SizedBox(width: 20),
+                        UiHelper.CustomText(
                           text: "16 minutes",
-                          color: const Color(0XFFFFFFFF),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
+                          color: Color(0XFFFFFFFF),
+                          fontweight: FontWeight.bold,
+                          fontsize: 20,
+                          fontfamily: "bold",
                         ),
                       ],
                     ),
                     Row(
                       children: [
-                        const SizedBox(width: 20),
-                        _customText(
+                        SizedBox(width: 20),
+                        UiHelper.CustomText(
                           text: "HOME ",
-                          color: const Color(0XFFFFFFFF),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          color: Color(0XFFFFFFFF),
+                          fontweight: FontWeight.bold,
+                          fontsize: 14,
                         ),
-                        _customText(
+                        UiHelper.CustomText(
                           text: "- Your Location Address",
-                          color: const Color(0XFFFFFFFF),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          color: Color(0XFFFFFFFF),
+                          fontweight: FontWeight.bold,
+                          fontsize: 14,
                         ),
                       ],
                     ),
@@ -101,31 +216,36 @@ class DashboardScreen extends StatelessWidget {
               Positioned(
                 bottom: 30,
                 left: 20,
-                child: _customTextField(controller: searchController),
+                child: UiHelper.CustomTextField(controller: searchController),
               ),
             ],
           ),
+
+          // Divider
           Container(height: 1, width: double.infinity, color: Colors.white),
+
+          // Mega Diwali Sale Section
           Container(
             height: 196,
             width: double.infinity,
-            color: const Color(0XFFEC0505),
+            color: Color(0XFFEC0505),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _customImage(img: "image 60.png"),
-                    _customImage(img: "image 55.png"),
-                    _customText(
+                    UiHelper.CustomImage(img: "image 60.png"),
+                    UiHelper.CustomImage(img: "image 55.png"),
+                    UiHelper.CustomText(
                       text: "Mega Diwali Sale",
                       color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
+                      fontweight: FontWeight.bold,
+                      fontsize: 20,
+                      fontfamily: "bold",
                     ),
-                    _customImage(img: "image 55.png"),
-                    _customImage(img: "image 61.png"),
+                    UiHelper.CustomImage(img: "image 55.png"),
+                    UiHelper.CustomImage(img: "image 61.png"),
                   ],
                 ),
                 Expanded(
@@ -144,26 +264,29 @@ class DashboardScreen extends StatelessWidget {
                             height: 108,
                             width: 86,
                             decoration: BoxDecoration(
-                              color: const Color(0XFFEAD3D3),
+                              color: Color(0XFFEAD3D3),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                _customText(
-                                  text: data[index]["text"].toString(),
+                                UiHelper.CustomText(
+                                  text: diwaliSaleData[index]["text"]
+                                      .toString(),
                                   color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 10,
+                                  fontweight: FontWeight.bold,
+                                  fontsize: 10,
                                 ),
-                                _customImage(
-                                  img: data[index]["img"].toString(),
+                                SizedBox(height: 5),
+                                UiHelper.CustomImage(
+                                  img: diwaliSaleData[index]["img"].toString(),
                                 ),
                               ],
                             ),
                           ),
                         );
                       },
-                      itemCount: data.length,
+                      itemCount: diwaliSaleData.length,
                       scrollDirection: Axis.horizontal,
                     ),
                   ),
@@ -171,181 +294,172 @@ class DashboardScreen extends StatelessWidget {
               ],
             ),
           ),
+
+          // Category Products Section
           Expanded(
             flex: 2,
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: ListView.builder(
                 itemBuilder: (context, index) {
-                  return Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Container(
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
                           clipBehavior: Clip.antiAlias,
                           height: 108,
                           width: 93,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: _customImage(
-                            img: category[index]["img"].toString(),
+                          child: UiHelper.CustomImage(
+                            img: categoryData[index]["img"].toString(),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 20),
-                        child: _customText(
-                          text: category[index]["text"].toString(),
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 8,
+                        SizedBox(height: 5),
+                        SizedBox(
+                          width: 93,
+                          child: UiHelper.CustomText(
+                            text: categoryData[index]["text"].toString(),
+                            color: Colors.black,
+                            fontweight: FontWeight.bold,
+                            fontsize: 8,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 5),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 40),
-                        child: Row(
+                        SizedBox(height: 5),
+                        Row(
                           children: [
-                            _customImage(img: "timer 4.png"),
-                            _customText(
-                              text: "16 MINS",
-                              color: const Color(0XFF9C9C9C),
-                              fontWeight: FontWeight.normal,
-                              fontSize: 10,
+                            UiHelper.CustomImage(img: "timer 4.png"),
+                            SizedBox(width: 3),
+                            UiHelper.CustomText(
+                              text: "${categoryData[index]["time"]} MINS",
+                              color: Color(0XFF9C9C9C),
+                              fontweight: FontWeight.normal,
+                              fontsize: 10,
                             ),
                           ],
                         ),
-                      ),
-                      const SizedBox(height: 5),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 60),
-                        child: Row(
+                        SizedBox(height: 5),
+                        Row(
                           children: [
-                            _customImage(img: "image 50 (1).png"),
-                            _customText(
-                              text: "79",
-                              color: const Color(0XFF9C9C9C),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
+                            UiHelper.CustomImage(img: "image 50 (1).png"),
+                            SizedBox(width: 3),
+                            UiHelper.CustomText(
+                              text: categoryData[index]["price"].toString(),
+                              color: Color(0XFF9C9C9C),
+                              fontweight: FontWeight.bold,
+                              fontsize: 15,
                             ),
+                            SizedBox(width: 10),
+                            UiHelper.CustomButton(() {
+                              // Add to cart functionality
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '${categoryData[index]["text"]} added to cart!',
+                                  ),
+                                  duration: Duration(seconds: 1),
+                                ),
+                              );
+                            }),
                           ],
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   );
                 },
-                itemCount: category.length,
+                itemCount: categoryData.length,
                 scrollDirection: Axis.horizontal,
               ),
             ),
           ),
+
+          // Grocery & Kitchen Section Title
           Row(
             children: [
-              const SizedBox(width: 20),
-              _customText(
+              SizedBox(width: 20),
+              UiHelper.CustomText(
                 text: "Grocery & Kitchen",
                 color: Colors.black,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
+                fontweight: FontWeight.bold,
+                fontsize: 14,
+                fontfamily: "bold",
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
+
+          // Grocery & Kitchen Items
           Expanded(
             flex: 1,
             child: Padding(
-              padding: const EdgeInsets.only(left: 20),
+              padding: const EdgeInsets.only(left: 20, bottom: 10),
               child: ListView.builder(
                 itemBuilder: (context, index) {
-                  return Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: Container(
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: Column(
+                      children: [
+                        Container(
                           height: 78,
                           width: 71,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10),
-                            color: const Color(0XFFD9EBEB),
+                            color: Color(0XFFD9EBEB),
                           ),
-                          child: _customImage(
-                            img: groceryKitchen[index]["img"].toString(),
+                          child: UiHelper.CustomImage(
+                            img: groceryKitchenData[index]["img"].toString(),
                           ),
                         ),
-                      ),
-                      _customText(
-                        text: groceryKitchen[index]["text"].toString(),
-                        color: Colors.black,
-                        fontWeight: FontWeight.normal,
-                        fontSize: 10,
-                      ),
-                    ],
+                        SizedBox(height: 5),
+                        SizedBox(
+                          width: 71,
+                          child: UiHelper.CustomText(
+                            text: groceryKitchenData[index]["text"].toString(),
+                            color: Colors.black,
+                            fontweight: FontWeight.normal,
+                            fontsize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 },
-                itemCount: groceryKitchen.length,
+                itemCount: groceryKitchenData.length,
                 scrollDirection: Axis.horizontal,
               ),
             ),
           ),
         ],
       ),
-    );
-  }
 
-  // Helper widget for custom text
-  Widget _customText({
-    required String text,
-    required Color color,
-    required FontWeight fontWeight,
-    required double fontSize,
-  }) {
-    return Text(
-      text,
-      style: TextStyle(
-        color: color,
-        fontWeight: fontWeight,
-        fontSize: fontSize,
-      ),
-    );
-  }
-
-  // Helper widget for custom image
-  Widget _customImage({required String img}) {
-    return Image.asset(
-      'assets/images/$img',
-      fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) {
-        return Container(
-          color: Colors.grey[300],
-          child: const Icon(Icons.image_not_supported),
-        );
-      },
-    );
-  }
-
-  // Helper widget for custom text field
-  Widget _customTextField({required TextEditingController controller}) {
-    return Container(
-      width: 350,
-      height: 50,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: TextField(
-        controller: controller,
-        decoration: InputDecoration(
-          hintText: 'Search for products...',
-          prefixIcon: const Icon(Icons.search),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide.none,
+      // Bottom Navigation Bar
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onBottomNavTap,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Color(0XFFEC0505),
+        unselectedItemColor: Colors.grey,
+        selectedFontSize: 12,
+        unselectedFontSize: 12,
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.category),
+            label: 'Category',
           ),
-          filled: true,
-          fillColor: Colors.white,
-        ),
+          BottomNavigationBarItem(icon: Icon(Icons.print), label: 'Print'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
   }
 }
