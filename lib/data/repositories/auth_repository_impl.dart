@@ -145,8 +145,6 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 }
-class AuthException implements Exception {
-       
-}
+
 
 
