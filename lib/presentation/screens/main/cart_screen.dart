@@ -1,15 +1,15 @@
-import 'package:quick_cart/presentation/widgets/uihelper.dart';
 import 'package:flutter/material.dart';
+import '../../widgets/uihelper.dart';
 
 class CartScreen extends StatelessWidget {
   TextEditingController searchController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
         children: [
           SizedBox(height: 40),
-
           Stack(
             children: [
               Container(
