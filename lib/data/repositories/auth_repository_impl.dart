@@ -75,7 +75,6 @@ class AuthRepositoryImpl implements AuthRepository {
         throw Exception('User not found');
       }
 
-      // Check password
       if (user.password != password) {
         throw Exception('Invalid password');
       }
