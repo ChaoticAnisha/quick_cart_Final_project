@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_routes.dart';
-import '../../../data/repositories/auth_repository_impl.dart';
+import '../../../features/auth/presentation/viewmodel/auth_viewmodel.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
-  final _authRepository = AuthRepositoryImpl();
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   String _userName = '';
   String _userEmail = '';
   bool _isLoading = true;
@@ -22,18 +22,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadUserData() async {
-    final user = await _authRepository.getCurrentUser();
-    if (user != null && mounted) {
-      setState(() {
-        _userName = user.name;
-        _userEmail = user.email;
-        _isLoading = false;
-      });
-    }
+    final authState = ref.read(authViewModelProvider);
+    setState(() {
+      _userName = authState.user?.name ?? '';
+      _userEmail = authState.user?.email ?? '';
+      _isLoading = false;
+    });
   }
 
   Future<void> _handleLogout() async {
-    await _authRepository.logout();
+    await ref.read(authViewModelProvider.notifier).logout();
     if (mounted) {
       Navigator.pushReplacementNamed(context, AppRoutes.login);
     }

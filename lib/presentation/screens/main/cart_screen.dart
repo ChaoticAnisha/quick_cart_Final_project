@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../widgets/uihelper.dart';
 
 class CartScreen extends StatelessWidget {
-  TextEditingController searchController = TextEditingController();
+  final TextEditingController searchController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
