@@ -272,10 +272,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     switch (index) {
       case 0:
-        // Already on Dashboard
         break;
       case 1:
-        // Navigate to Category using named route
         Navigator.pushNamed(context, AppRoutes.category);
         break;
       case 2:
