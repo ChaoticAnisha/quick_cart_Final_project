@@ -440,7 +440,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // Search Bar
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: UiHelper.CustomTextField(
@@ -465,7 +464,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 child: Column(
                   children: [
-                    // Title with decorations
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Row(
@@ -891,7 +889,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-// ==================== ALL ITEMS SCREEN ====================
 class AllItemsScreen extends StatelessWidget {
   final String title;
   final List<Map<String, String>> items;
