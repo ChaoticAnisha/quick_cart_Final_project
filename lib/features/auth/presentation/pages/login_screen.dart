@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/utils/validators.dart';
-import '../../../../presentation/widgets/custom_button.dart';
-import '../../../../presentation/widgets/custom_text_field.dart';
+import '../../../../core/widgets/custom_button.dart';
+import '../../../../core/widgets/custom_text_field.dart';
 import '../state/auth_state.dart';
 import '../viewmodel/auth_viewmodel.dart';
 

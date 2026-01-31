@@ -1,4 +1,4 @@
-import '../../../../domain/entities/auth_entities.dart';
+import '../../domain/entities/auth_entities.dart';
 
 class AuthApiModel {
   final String? id;
@@ -18,13 +18,15 @@ class AuthApiModel {
   });
 
   factory AuthApiModel.fromJson(Map<String, dynamic> json) {
+    final user = json['user'] ?? json; // handle nested user object
+
     return AuthApiModel(
-      id: json['id'] ?? json['_id'],
-      name: json['name'] as String,
-      email: json['email'] as String,
-      phone: json['phone'] as String?,
-      profilePicture: json['profilePicture'] ?? json['profile_picture'],
-      token: json['token'],
+      id: user['id'] ?? user['_id'],
+      name: user['name'] ?? '', // provide default if null
+      email: user['email'] ?? '',
+      phone: user['phone'],
+      profilePicture: user['profilePicture'] ?? user['profile_picture'],
+      token: json['token'], // token is outside user
     );
   }
 

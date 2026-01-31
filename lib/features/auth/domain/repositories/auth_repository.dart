@@ -1,10 +1,10 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../entities/auth_entities.dart';
-import '../../core/error/failures.dart';
-import '../../features/auth/data/datasources/local/auth_local_datasource.dart';
-import '../../features/auth/data/datasources/remote/auth_remote_datasource.dart';
-import '../../features/auth/data/repositories/auth_repository_impl.dart';
+import '../../../../core/error/failures.dart';
+import '../../data/datasources/local/auth_local_datasource.dart';
+import '../../data/datasources/remote/auth_remote_datasource.dart';
+import '../../data/repositories/auth_repository_impl.dart';
 
 final authRepositoryProvider = Provider<IAuthRepository>((ref) {
   return AuthRepositoryImpl(

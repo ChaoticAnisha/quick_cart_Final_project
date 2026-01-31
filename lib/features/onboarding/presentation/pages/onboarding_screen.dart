@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_routes.dart';
+import '../../../../core/constants/app_routes.dart';
 
 // ==================== ONBOARDING SCREEN 1 ====================
 class OnboardingOne extends StatelessWidget {

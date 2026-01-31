@@ -1,6 +1,6 @@
 class ApiConstants {
   // TODO: Replace with your actual API URL
-  static const String baseUrl = 'http://192.168.1.100:8000/api';
+  static const String baseUrl = 'http://localhost:5000/api';
 
   // Auth Endpoints
   static const String login = '/auth/login';

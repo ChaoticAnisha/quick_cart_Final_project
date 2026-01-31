@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quick_cart/core/constants/api_constants.dart';
-import 'package:quick_cart/core/network/api_client.dart';
+import 'package:quick_cart/api/api_endpoints.dart';
+import 'package:quick_cart/api/api_client.dart';
 import 'package:quick_cart/features/auth/data/models/auth_api_model.dart';
 import 'package:quick_cart/features/auth/data/datasources/auth_datasource.dart';
 

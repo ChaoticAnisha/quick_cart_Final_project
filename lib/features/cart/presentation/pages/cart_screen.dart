@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../widgets/uihelper.dart';
+import '../../../../core/widgets/uihelper.dart';
 
 class CartScreen extends StatelessWidget {
   final TextEditingController searchController = TextEditingController();

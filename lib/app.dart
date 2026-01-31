@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'core/constants/app_routes.dart';
-import 'presentation/screens/onboarding/splash_screen.dart';
-import 'presentation/screens/onboarding/onboarding_screen.dart';
-import 'features/auth/presentation/screens/login_screen.dart';
-import 'features/auth/presentation/screens/register_screen.dart';
-import 'presentation/screens/main/dashboard_screen.dart';
-import 'presentation/screens/main/category_screen.dart';
-import 'presentation/screens/main/cart_screen.dart';
-import 'presentation/screens/main/profile_screen.dart';
+import 'features/splash/presentation/pages/splash_screen.dart';
+import 'features/onboarding/presentation/pages/onboarding_screen.dart';
+import 'features/auth/presentation/pages/login_screen.dart';
+import 'features/auth/presentation/pages/register_screen.dart';
+import 'features/dashboard/presentation/pages/dashboard_screen.dart';
+import 'features/category/presentation/pages/category_screen.dart';
+import 'features/cart/presentation/pages/cart_screen.dart';
+import 'features/profile/presentation/profile_screen.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
