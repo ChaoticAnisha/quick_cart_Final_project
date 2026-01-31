@@ -337,7 +337,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           physics: const BouncingScrollPhysics(),
           child: Column(
             children: [
-              // Header Section with Gradient Background
               Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
