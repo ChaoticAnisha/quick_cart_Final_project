@@ -279,11 +279,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Navigator.pushNamed(context, AppRoutes.category);
         break;
       case 2:
-        // Navigate to Cart using named route
         Navigator.pushNamed(context, AppRoutes.cart);
         break;
       case 3:
-        // Navigate to Profile
         Navigator.pushNamed(context, AppRoutes.profile);
         break;
     }
