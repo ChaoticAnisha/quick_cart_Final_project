@@ -350,7 +350,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 20),
-                    // Top Bar
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Row(
