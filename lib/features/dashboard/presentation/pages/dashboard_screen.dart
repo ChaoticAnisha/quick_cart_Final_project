@@ -139,7 +139,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Set<int> addedProducts = {};
   Set<int> addedGrocery = {};
 
-  // Data for Diwali Sale section
   final List<Map<String, String>> diwaliSaleData = [
     {"img": "image 50.png", "text": "Lights, Diyas\n& Candles"},
     {"img": "image 51.png", "text": "Diwali\nGifts"},
@@ -153,7 +152,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     {"img": "image 51.png", "text": "Gift\nHampers"},
   ];
 
-  // Data for Featured Products section
   final List<Map<String, String>> categoryData = [
     {
       "img": "image 54.png",
@@ -247,7 +245,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     },
   ];
 
-  // Data for Grocery & Kitchen section
   final List<Map<String, String>> groceryKitchenData = [
     {"img": "image 41.png", "text": "Vegetables &\nFruits"},
     {"img": "image 42.png", "text": "Atta, Dal &\nRice"},
