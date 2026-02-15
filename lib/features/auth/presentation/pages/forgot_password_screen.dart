@@ -163,7 +163,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                   const SizedBox(height: 40),
 
-                  // Title
                   const Text(
                     'Forgot Password?',
                     style: TextStyle(
