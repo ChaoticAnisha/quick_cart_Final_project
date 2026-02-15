@@ -107,7 +107,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 children: [
                   const SizedBox(height: 20),
 
-                  // Logo
                   Container(
                     width: 110,
                     height: 110,
