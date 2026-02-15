@@ -309,7 +309,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Login Link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
