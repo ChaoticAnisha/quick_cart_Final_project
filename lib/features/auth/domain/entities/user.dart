@@ -68,7 +68,6 @@ class User extends Equatable {
     return 'http://192.168.1.100:3000$profilePicture'; 
   }
 
-  // Convert to AuthEntity
   AuthEntity toAuthEntity() {
     return AuthEntity(
       id: id,
