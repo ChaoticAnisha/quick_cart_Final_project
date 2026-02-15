@@ -80,7 +80,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 children: [
                   const SizedBox(height: 40),
 
-                  // Logo
                   Container(
                     width: 120,
                     height: 120,
