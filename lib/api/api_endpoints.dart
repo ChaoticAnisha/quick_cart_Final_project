@@ -1,5 +1,4 @@
 class ApiEndpoints {
-  // REPLACE 192.168.1.100 WITH YOUR ACTUAL IP ADDRESS
   static const String baseUrl = 'http://192.168.1.100:3000/api';
 
   // Timeouts
