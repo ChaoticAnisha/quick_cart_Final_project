@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/utils/validators.dart';
-import '../../../../core/widgets/custom_button.dart';
-import '../../../../core/widgets/custom_text_field.dart';
 import '../state/auth_state.dart';
 import '../viewmodel/auth_viewmodel.dart';
+import '../widgets/gradient_button.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -42,16 +41,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authViewModelProvider);
 
-    // Listen to auth state changes
     ref.listen(authViewModelProvider, (previous, next) {
       if (next.status == AuthStatus.authenticated) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login successful!'),
+            backgroundColor: Colors.green,
+          ),
+        );
         Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
       } else if (next.status == AuthStatus.error && next.errorMessage != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.errorMessage!),
             backgroundColor: Colors.red,
-            duration: const Duration(seconds: 2),
           ),
         );
       }
@@ -74,118 +77,129 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Form(
               key: _formKey,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 40),
+
                   // Logo
-                  Center(
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 20,
+                          spreadRadius: 5,
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(20),
                     child: Image.asset(
                       'assets/images/image 1 (1).png',
-                      width: 120,
-                      height: 120,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(
+                          Icons.shopping_cart,
+                          size: 60,
+                          color: Color(0xFFFFA500),
+                        );
+                      },
                     ),
                   ),
-                  const SizedBox(height: 30),
+
+                  const SizedBox(height: 40),
+
+                  // Title
                   const Text(
                     'Welcome Back',
                     style: TextStyle(
-                      fontSize: 32,
+                      fontSize: 36,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                       letterSpacing: 1,
                     ),
-                    textAlign: TextAlign.center,
                   ),
+
                   const SizedBox(height: 8),
-                  const Text(
+
+                  Text(
                     'Sign in to continue shopping',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.white70,
+                      color: Colors.white.withOpacity(0.7),
                       fontWeight: FontWeight.w300,
                     ),
-                    textAlign: TextAlign.center,
                   ),
+
                   const SizedBox(height: 40),
-                  // Email Field with white background
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: CustomTextField(
-                      controller: _emailController,
-                      labelText: 'Email',
-                      hintText: 'Enter your email',
-                      prefixIcon: Icons.email,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) =>
-                          Validators.validateEmail(value ?? ''),
-                    ),
+
+                  // Email Field
+                  _buildTextField(
+                    controller: _emailController,
+                    hint: 'Enter your email',
+                    icon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: Validators.validateEmail,
                   ),
+
                   const SizedBox(height: 16),
-                  // Password Field with white background
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: CustomTextField(
-                      controller: _passwordController,
-                      labelText: 'Password',
-                      hintText: 'Enter your password',
-                      prefixIcon: Icons.lock,
-                      obscureText: _obscurePassword,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility
-                              : Icons.visibility_off,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
+
+                  // Password Field
+                  _buildTextField(
+                    controller: _passwordController,
+                    hint: 'Enter your password',
+                    icon: Icons.lock_outline,
+                    obscureText: _obscurePassword,
+                    validator: Validators.validatePassword,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.grey,
                       ),
-                      validator: (value) =>
-                          Validators.validatePassword(value ?? ''),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
                     ),
                   ),
-                  const SizedBox(height: 30),
-                  // Login Button
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 15,
-                          offset: const Offset(0, 8),
+
+                  const SizedBox(height: 12),
+
+                  // Forgot Password
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.forgotPassword);
+                      },
+                      child: const Text(
+                        'Forgot Password?',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                         ),
-                      ],
-                    ),
-                    child: CustomButton(
-                      text: 'Login',
-                      onPressed: _handleLogin,
-                      isLoading: authState.status == AuthStatus.loading,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+
+                  const SizedBox(height: 24),
+
+                  // Login Button
+                  GradientButton(
+                    text: 'Login',
+                    isInverted: true,
+                    onPressed: _handleLogin,
+                    isLoading: authState.status == AuthStatus.loading,
+                  ),
+
+                  const SizedBox(height: 24),
+
                   // Sign Up Link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -202,8 +216,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           'Sign Up',
                           style: TextStyle(
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
                             fontSize: 15,
+                            fontWeight: FontWeight.bold,
                             decoration: TextDecoration.underline,
                             decorationColor: Colors.white,
                             decorationThickness: 2,
@@ -215,6 +229,48 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    String? Function(String?)? validator,
+    Widget? suffixIcon,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        obscureText: obscureText,
+        validator: validator,
+        style: const TextStyle(color: Colors.black87),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: Colors.grey.shade400),
+          prefixIcon: Icon(icon, color: Colors.grey.shade400),
+          suffixIcon: suffixIcon,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 18,
           ),
         ),
       ),

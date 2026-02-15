@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import '../../domain/entities/user.dart';
 import '../../domain/usecases/auth_usecases.dart';
 import '../state/auth_state.dart';
 
@@ -26,11 +26,9 @@ class AuthViewModel extends Notifier<AuthState> {
     required String password,
   }) async {
     state = state.copyWith(status: AuthStatus.loading);
-
     final result = await _registerUsecase(
       RegisterParams(name: name, email: email, password: password),
     );
-
     result.fold(
       (failure) => state = state.copyWith(
         status: AuthStatus.error,
@@ -42,26 +40,32 @@ class AuthViewModel extends Notifier<AuthState> {
 
   Future<void> login({required String email, required String password}) async {
     state = state.copyWith(status: AuthStatus.loading);
-
     final result = await _loginUsecase(
       LoginParams(email: email, password: password),
     );
-
     result.fold(
       (failure) => state = state.copyWith(
         status: AuthStatus.error,
         errorMessage: failure.message,
       ),
-      (user) =>
-          state = state.copyWith(status: AuthStatus.authenticated, user: user),
+      (authEntity) {
+        // Convert AuthEntity to User
+        final user = User(
+          id: authEntity.id ?? '',
+          name: authEntity.name,
+          email: authEntity.email,
+          phone: authEntity.phone,
+          address: authEntity.address,
+          profilePicture: authEntity.profilePicture,
+        );
+        state = state.copyWith(status: AuthStatus.authenticated, user: user);
+      },
     );
   }
 
   Future<void> logout() async {
     state = state.copyWith(status: AuthStatus.loading);
-
     final result = await _logoutUsecase();
-
     result.fold(
       (failure) => state = state.copyWith(
         status: AuthStatus.error,
@@ -76,5 +80,10 @@ class AuthViewModel extends Notifier<AuthState> {
 
   void clearError() {
     state = state.copyWith(errorMessage: null);
+  }
+
+  // Method for profile updates
+  void updateUser(User user) {
+    state = state.copyWith(user: user);
   }
 }

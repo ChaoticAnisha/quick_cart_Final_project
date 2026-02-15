@@ -271,13 +271,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 0:
         break;
       case 1:
-        Navigator.pushNamed(context, AppRoutes.category);
+        Navigator.pushNamed(context, AppRoutes.profile);
         break;
       case 2:
-        Navigator.pushNamed(context, AppRoutes.cart);
+        Navigator.pushNamed(context, AppRoutes.profile);
         break;
       case 3:
-        Navigator.pushNamed(context, AppRoutes.profile);
+        Navigator.pushNamed(context, AppRoutes.editProfile);
         break;
     }
   }
@@ -401,7 +401,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           const SizedBox(width: 10),
                           GestureDetector(
                             onTap: () {
-                              Navigator.pushNamed(context, AppRoutes.profile);
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.editProfile,
+                              );
                             },
                             child: Container(
                               padding: const EdgeInsets.all(3),

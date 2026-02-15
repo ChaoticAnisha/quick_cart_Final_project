@@ -1,10 +1,10 @@
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../../../core/error/failures.dart';
 import '../entities/auth_entities.dart';
 import '../repositories/auth_repository.dart';
+import '../../data/repositories/auth_repository_impl.dart';
 
 // Login UseCase
 class LoginParams extends Equatable {
@@ -18,7 +18,7 @@ class LoginParams extends Equatable {
 }
 
 final loginUsecaseProvider = Provider<LoginUsecase>((ref) {
-  final authRepository = ref.read(authRepositoryProvider);
+  final authRepository = ref.read(authRepositoryImplProvider);
   return LoginUsecase(authRepository: authRepository);
 });
 
@@ -50,7 +50,7 @@ class RegisterParams extends Equatable {
 }
 
 final registerUsecaseProvider = Provider<RegisterUsecase>((ref) {
-  final authRepository = ref.read(authRepositoryProvider);
+  final authRepository = ref.read(authRepositoryImplProvider);
   return RegisterUsecase(authRepository: authRepository);
 });
 
@@ -71,7 +71,7 @@ class RegisterUsecase {
 
 // Logout UseCase
 final logoutUsecaseProvider = Provider<LogoutUsecase>((ref) {
-  final authRepository = ref.read(authRepositoryProvider);
+  final authRepository = ref.read(authRepositoryImplProvider);
   return LogoutUsecase(authRepository: authRepository);
 });
 

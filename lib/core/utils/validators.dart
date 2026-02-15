@@ -4,7 +4,7 @@ class Validators {
       return 'Please enter your email';
     }
     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(value)) {
+    if (!emailRegex.hasMatch(value.trim())) {
       return 'Please enter a valid email';
     }
     return null;
@@ -24,7 +24,7 @@ class Validators {
     if (value == null || value.isEmpty) {
       return 'Please enter your name';
     }
-    if (value.length < 2) {
+    if (value.trim().length < 2) {
       return 'Name must be at least 2 characters';
     }
     return null;
@@ -36,13 +36,6 @@ class Validators {
     }
     if (value != password) {
       return 'Passwords do not match';
-    }
-    return null;
-  }
-
-  static String? validateRequired(String? value, String fieldName) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter $fieldName';
     }
     return null;
   }

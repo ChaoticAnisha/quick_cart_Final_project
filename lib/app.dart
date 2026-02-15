@@ -4,10 +4,12 @@ import 'features/splash/presentation/pages/splash_screen.dart';
 import 'features/onboarding/presentation/pages/onboarding_screen.dart';
 import 'features/auth/presentation/pages/login_screen.dart';
 import 'features/auth/presentation/pages/register_screen.dart';
+import 'features/auth/presentation/pages/forgot_password_screen.dart'; // ADD THIS LINE
 import 'features/dashboard/presentation/pages/dashboard_screen.dart';
 import 'features/category/presentation/pages/category_screen.dart';
 import 'features/cart/presentation/pages/cart_screen.dart';
-import 'features/profile/presentation/profile_screen.dart';
+import 'features/profile/presentation/pages/profile_screen.dart';
+import 'features/profile/presentation/pages/edit_profile.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -30,11 +32,14 @@ class App extends StatelessWidget {
         AppRoutes.onboarding3: (context) => const OnboardingThree(),
         AppRoutes.login: (context) => const LoginScreen(),
         AppRoutes.register: (context) => const RegisterScreen(),
+        AppRoutes.forgotPassword: (context) =>
+            const ForgotPasswordScreen(), // ADD THIS LINE
         AppRoutes.home: (context) => const DashboardScreen(),
         AppRoutes.dashboard: (context) => const DashboardScreen(),
-        AppRoutes.category: (context) => CategoryScreen(),
-        AppRoutes.cart: (context) => CartScreen(),
+        AppRoutes.category: (context) => const CategoryScreen(),
+        AppRoutes.cart: (context) => const CartScreen(),
         AppRoutes.profile: (context) => const ProfileScreen(),
+        AppRoutes.editProfile: (context) => const EditProfileScreen(),
       },
     );
   }

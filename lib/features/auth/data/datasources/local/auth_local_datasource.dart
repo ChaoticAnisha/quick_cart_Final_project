@@ -1,11 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../auth_datasource.dart';
-
-final authLocalProvider = Provider<IAuthLocalDataSource>((ref) {
-  return AuthLocalDatasource();
-});
 
 class AuthLocalDatasource implements IAuthLocalDataSource {
   static const String _tokenKey = 'auth_token';
@@ -41,7 +36,6 @@ class AuthLocalDatasource implements IAuthLocalDataSource {
     return prefs.getString(_tokenKey);
   }
 
-  @override
   Future<String?> getUserId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_userIdKey);
@@ -57,4 +51,3 @@ class AuthLocalDatasource implements IAuthLocalDataSource {
     await prefs.setBool(_isLoggedInKey, false);
   }
 }
-//huh

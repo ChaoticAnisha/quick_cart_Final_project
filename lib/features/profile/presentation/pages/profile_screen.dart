@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_routes.dart';
-import '../../auth/presentation/viewmodel/auth_viewmodel.dart';
+import '../../../../core/constants/app_routes.dart';
+import '../../../auth/presentation/viewmodel/auth_viewmodel.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -25,8 +25,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Future<void> _loadUserData() async {
     final authState = ref.read(authViewModelProvider);
     setState(() {
-      _userName = authState.user?.name ?? '';
-      _userEmail = authState.user?.email ?? '';
+      _userName = authState.user?.name ?? 'Guest User';
+      _userEmail = authState.user?.email ?? 'guest@quickcart.com';
       _isLoading = false;
     });
   }
@@ -72,59 +72,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   void _handleEditProfile() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'Edit Profile',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        content: const Text('Edit profile feature coming soon!'),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFFA500),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: const Text('OK', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
+    Navigator.pushNamed(context, AppRoutes.editProfile);
   }
 
   void _onBottomNavTap(int index) {
     if (index == _selectedIndex) return;
-
-    setState(() {
-      _selectedIndex = index;
-    });
 
     switch (index) {
       case 0:
         Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
         break;
       case 1:
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Category feature coming soon!'),
-            backgroundColor: Color(0xFFFFA500),
-            duration: Duration(seconds: 1),
-          ),
-        );
+        Navigator.pushNamed(context, AppRoutes.category);
         break;
       case 2:
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Cart feature coming soon!'),
-            backgroundColor: Color(0xFFFFA500),
-            duration: Duration(seconds: 1),
-          ),
-        );
+        Navigator.pushNamed(context, AppRoutes.cart);
         break;
       case 3:
         break;
@@ -133,8 +95,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     return Scaffold(
       body: _isLoading
           ? Container(
@@ -167,7 +127,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               child: SafeArea(
                 child: Column(
                   children: [
-                    // Header Section (Fixed)
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 20,
@@ -175,7 +134,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                       child: Column(
                         children: [
-                          // App Title
                           const Text(
                             'QuickCart',
                             style: TextStyle(
@@ -186,7 +144,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             ),
                           ),
                           const SizedBox(height: 30),
-                          // Profile Avatar with Edit Button
                           Stack(
                             children: [
                               Container(
@@ -250,7 +207,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             ],
                           ),
                           const SizedBox(height: 20),
-                          // User Name
                           Text(
                             _userName,
                             style: const TextStyle(
@@ -261,7 +217,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          // User Email
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -298,7 +253,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // Scrollable Content Section
                     Expanded(
                       child: Container(
                         width: double.infinity,
@@ -444,7 +398,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   },
                                 ),
                                 const SizedBox(height: 30),
-                                // Logout Button
                                 Container(
                                   width: double.infinity,
                                   height: 56,

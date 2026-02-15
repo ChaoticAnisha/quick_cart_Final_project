@@ -7,7 +7,6 @@ import '../../domain/entities/auth_entities.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_datasource.dart';
 import '../datasources/local/auth_local_datasource.dart';
-import '../datasources/remote/auth_remote_datasource.dart';
 
 final authRepositoryImplProvider = Provider<IAuthRepository>((ref) {
   return AuthRepositoryImpl(
@@ -33,19 +32,21 @@ class AuthRepositoryImpl implements IAuthRepository {
     required String password,
   }) async {
     try {
-      final apiModel = await _authRemoteDataSource.register(
-        name,
-        email,
-        password,
+      final response = await _authRemoteDataSource.register(
+        name: name,
+        email: email,
+        password: password,
       );
 
-      // Save user session after successful registration
-      if (apiModel.token != null) {
+      final userData = response.data;
+      final token = userData['token'];
+
+      if (token != null) {
         await _authLocalDataSource.saveUserSession(
-          token: apiModel.token!,
-          userId: apiModel.id ?? '',
-          email: apiModel.email,
-          name: apiModel.name,
+          token: token,
+          userId: userData['user']['id'] ?? '',
+          email: userData['user']['email'],
+          name: userData['user']['name'],
         );
       }
 
@@ -68,19 +69,34 @@ class AuthRepositoryImpl implements IAuthRepository {
     String password,
   ) async {
     try {
-      final apiModel = await _authRemoteDataSource.login(email, password);
+      final response = await _authRemoteDataSource.login(
+        email: email,
+        password: password,
+      );
 
-      // Save user session after successful login
-      if (apiModel.token != null) {
+      final userData = response.data;
+      final token = userData['token'];
+      final user = userData['user'];
+
+      if (token != null) {
         await _authLocalDataSource.saveUserSession(
-          token: apiModel.token!,
-          userId: apiModel.id ?? '',
-          email: apiModel.email,
-          name: apiModel.name,
+          token: token,
+          userId: user['id'] ?? user['_id'] ?? '',
+          email: user['email'],
+          name: user['name'],
         );
       }
 
-      return Right(apiModel.toEntity());
+      return Right(
+        AuthEntity(
+          id: user['id'] ?? user['_id'],
+          name: user['name'],
+          email: user['email'],
+          phone: user['phone'],
+          address: user['address'],
+          profilePicture: user['profilePicture'],
+        ),
+      );
     } on DioException catch (e) {
       return Left(
         ApiFailure(
@@ -100,7 +116,6 @@ class AuthRepositoryImpl implements IAuthRepository {
       await _authLocalDataSource.clearSession();
       return const Right(true);
     } on DioException catch (e) {
-      // Even if API call fails, clear local session
       await _authLocalDataSource.clearSession();
       return Left(
         ApiFailure(
@@ -117,8 +132,19 @@ class AuthRepositoryImpl implements IAuthRepository {
   @override
   Future<Either<Failure, AuthEntity>> getCurrentUser() async {
     try {
-      final apiModel = await _authRemoteDataSource.getCurrentUser();
-      return Right(apiModel.toEntity());
+      final response = await _authRemoteDataSource.getProfile();
+      final user = response.data;
+
+      return Right(
+        AuthEntity(
+          id: user['id'] ?? user['_id'],
+          name: user['name'],
+          email: user['email'],
+          phone: user['phone'],
+          address: user['address'],
+          profilePicture: user['profilePicture'],
+        ),
+      );
     } on DioException catch (e) {
       return Left(
         ApiFailure(

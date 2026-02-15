@@ -1,95 +1,101 @@
-import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quick_cart/api/api_endpoints.dart';
-import 'package:quick_cart/api/api_client.dart';
-import 'package:quick_cart/features/auth/data/models/auth_api_model.dart';
-import 'package:quick_cart/features/auth/data/datasources/auth_datasource.dart';
-
-final authRemoteProvider = Provider<IAuthRemoteDataSource>((ref) {
-  final apiClient = ref.read(apiClientProvider);
-  return AuthRemoteDatasource(apiClient: apiClient);
-});
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../../api/api_client.dart';
+import '../../../../../api/api_endpoints.dart';
+import '../../models/auth_api_model.dart';
+import '../auth_datasource.dart';
 
 class AuthRemoteDatasource implements IAuthRemoteDataSource {
-  final ApiClient _apiClient;
+  late final ApiClient _apiClient;
 
-  AuthRemoteDatasource({required ApiClient apiClient}) : _apiClient = apiClient;
+  AuthRemoteDatasource({ApiClient? apiClient}) {
+    if (apiClient != null) {
+      _apiClient = apiClient;
+    } else {
+      // Initialize with a temporary SharedPreferences instance
+      SharedPreferences.getInstance().then((prefs) {
+        _apiClient = ApiClient(prefs);
+      });
+    }
+  }
 
-  @override
-  Future<AuthApiModel> register(
-    String name,
-    String email,
-    String password,
-  ) async {
+  Future<ApiClient> _getClient() async {
     try {
-      final response = await _apiClient.post(
-        ApiConstants.register,
-        data: {
-          'name': name,
-          'email': email,
-          'password': password,
-          'password_confirmation': password,
-        },
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = response.data['data'] ?? response.data;
-        return AuthApiModel.fromJson(data);
-      } else {
-        throw Exception(response.data['message'] ?? 'Registration failed');
-      }
-    } on DioException catch (e) {
-      throw Exception(
-        e.response?.data['message'] ?? 'Registration failed: ${e.message}',
-      );
+      return _apiClient;
+    } catch (e) {
+      final prefs = await SharedPreferences.getInstance();
+      _apiClient = ApiClient(prefs);
+      return _apiClient;
     }
   }
 
   @override
-  Future<AuthApiModel> login(String email, String password) async {
+  Future<AuthResponseModel> register({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
     try {
-      final response = await _apiClient.post(
+      final client = await _getClient();
+      final response = await client.post(
+        ApiConstants.register,
+        data: {'name': name, 'email': email, 'password': password},
+      );
+
+      if (response.statusCode == 201) {
+        return AuthResponseModel.fromJson(response.data);
+      } else {
+        throw Exception('Registration failed');
+      }
+    } catch (e) {
+      throw Exception('Registration error: $e');
+    }
+  }
+
+  @override
+  Future<AuthResponseModel> login({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final client = await _getClient();
+      final response = await client.post(
         ApiConstants.login,
         data: {'email': email, 'password': password},
       );
 
       if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data;
-        return AuthApiModel.fromJson(data);
+        return AuthResponseModel.fromJson(response.data);
       } else {
-        throw Exception(response.data['message'] ?? 'Login failed');
+        throw Exception('Login failed');
       }
-    } on DioException catch (e) {
-      throw Exception(
-        e.response?.data['message'] ?? 'Login failed: ${e.message}',
-      );
+    } catch (e) {
+      throw Exception('Login error: $e');
     }
   }
 
   @override
   Future<void> logout() async {
     try {
-      await _apiClient.post(ApiConstants.logout);
-    } on DioException catch (e) {
-      throw Exception(
-        e.response?.data['message'] ?? 'Logout failed: ${e.message}',
-      );
+      final client = await _getClient();
+      await client.post(ApiConstants.logout);
+    } catch (e) {
+      throw Exception('Logout error: $e');
     }
   }
 
   @override
-  Future<AuthApiModel> getCurrentUser() async {
+  Future<AuthResponseModel> getProfile() async {
     try {
-      final response = await _apiClient.get(ApiConstants.profile);
+      final client = await _getClient();
+      final response = await client.get(ApiConstants.profile);
 
       if (response.statusCode == 200) {
-        final data = response.data['data'] ?? response.data['user'];
-        return AuthApiModel.fromJson(data);
+        return AuthResponseModel.fromJson(response.data);
       } else {
-        throw Exception('Failed to fetch profile');
+        throw Exception('Failed to get profile');
       }
-    } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Failed to fetch profile');
+    } catch (e) {
+      throw Exception('Get profile error: $e');
     }
   }
 }
