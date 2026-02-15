@@ -65,7 +65,7 @@ class User extends Equatable {
     if (profilePicture!.startsWith('http')) {
       return profilePicture;
     }
-    return 'http://192.168.1.100:3000$profilePicture'; // Replace with your IP
+    return 'http://192.168.1.100:3000$profilePicture'; 
   }
 
   // Convert to AuthEntity
