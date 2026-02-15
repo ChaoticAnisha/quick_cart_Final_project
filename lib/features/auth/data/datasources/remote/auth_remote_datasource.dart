@@ -11,7 +11,6 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
     if (apiClient != null) {
       _apiClient = apiClient;
     } else {
-      // Initialize with a temporary SharedPreferences instance
       SharedPreferences.getInstance().then((prefs) {
         _apiClient = ApiClient(prefs);
       });
