@@ -28,15 +28,15 @@ class ApiClient {
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
-          print('🌐 [${options.method}] ${options.path}');
+          print(' [${options.method}] ${options.path}');
           return handler.next(options);
         },
         onResponse: (response, handler) {
-          print('✅ [${response.statusCode}] ${response.data}');
+          print(' [${response.statusCode}] ${response.data}');
           return handler.next(response);
         },
         onError: (DioException e, handler) {
-          print('❌ [${e.response?.statusCode}] ${e.message}');
+          print('[${e.response?.statusCode}] ${e.message}');
           return handler.next(e);
         },
       ),
