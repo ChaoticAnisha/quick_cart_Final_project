@@ -43,6 +43,7 @@ class ApiClient {
     );
   }
 
+  // GET
   Future<Response> get(
     String path, {
     Map<String, dynamic>? queryParameters,
@@ -100,7 +101,7 @@ class ApiClient {
       data: formData,
       options: Options(headers: {'Content-Type': 'multipart/form-data'}),
       onSendProgress: (sent, total) {
-        print('📤 Upload: ${(sent / total * 100).toStringAsFixed(0)}%');
+        print(' Upload: ${(sent / total * 100).toStringAsFixed(0)}%');
       },
     );
   }
