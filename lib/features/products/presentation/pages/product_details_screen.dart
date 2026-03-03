@@ -117,7 +117,6 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen>
       backgroundColor: Colors.white,
       body: CustomScrollView(
         slivers: [
-          // ── Hero Image AppBar ──────────────────────────────────────────────
           SliverAppBar(
             expandedHeight: 320,
             pinned: true,
@@ -263,7 +262,6 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen>
             ),
           ),
 
-          // ── Product Info ──────────────────────────────────────────────────
           SliverToBoxAdapter(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -503,7 +501,6 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen>
         ],
       ),
 
-      // ── Bottom Action Bar ────────────────────────────────────────────────
       bottomNavigationBar: Container(
         padding: EdgeInsets.only(
           left: 20,
@@ -523,7 +520,6 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen>
         ),
         child: product.isInStock
             ? _addedToCart
-                // ── After adding: two-button row ──────────────────────────
                 ? Row(
                     children: [
                       Expanded(
@@ -572,7 +568,6 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen>
                       ),
                     ],
                   )
-                // ── Before adding: single Add to Cart button ───────────────
                 : ScaleTransition(
                     scale: _btnScale,
                     child: ElevatedButton.icon(
@@ -597,7 +592,6 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen>
                       ),
                     ),
                   )
-            // ── Out of stock ──────────────────────────────────────────────
             : SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -623,8 +617,6 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen>
     );
   }
 }
-
-// ─── Quantity Stepper ────────────────────────────────────────────────────────
 
 class _QuantityStepper extends StatelessWidget {
   final int qty;

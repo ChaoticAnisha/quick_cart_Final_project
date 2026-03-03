@@ -50,7 +50,6 @@ class ApiClient {
     );
   }
 
-  // GET — no Content-Type header to avoid CORS preflight on simple requests
   Future<Response> get(
     String path, {
     Map<String, dynamic>? queryParameters,
@@ -62,7 +61,6 @@ class ApiClient {
     );
   }
 
-  // POST
   Future<Response> post(
     String path, {
     dynamic data,
@@ -71,7 +69,6 @@ class ApiClient {
     return await _dio.post(path, data: data, queryParameters: queryParameters);
   }
 
-  // PUT
   Future<Response> put(
     String path, {
     dynamic data,
@@ -80,7 +77,6 @@ class ApiClient {
     return await _dio.put(path, data: data, queryParameters: queryParameters);
   }
 
-  // PATCH
   Future<Response> patch(
     String path, {
     dynamic data,
@@ -89,7 +85,6 @@ class ApiClient {
     return await _dio.patch(path, data: data, queryParameters: queryParameters);
   }
 
-  // DELETE
   Future<Response> delete(
     String path, {
     dynamic data,
@@ -102,7 +97,6 @@ class ApiClient {
     );
   }
 
-  // UPLOAD IMAGE — uses http.MultipartRequest which works reliably on web & mobile
   Future<Map<String, dynamic>> uploadImage(
     String path,
     XFile imageFile, {

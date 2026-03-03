@@ -241,8 +241,6 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   );
 }
 
-// ── Order Card ───────────────────────────────────────────────────────────────
-
 class _OrderCard extends StatelessWidget {
   final OrderEntity order;
   const _OrderCard({required this.order});

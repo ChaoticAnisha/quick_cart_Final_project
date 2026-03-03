@@ -16,7 +16,6 @@ class ProductModel extends Product {
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
-    // Handle category - can be String ID or Object
     String categoryId = '';
     String? categoryName;
 

@@ -10,8 +10,6 @@ class LocalCacheService {
   static const _keyProducts = 'all_products';
   static const _keyCategories = 'all_categories';
 
-  // ── Products ──────────────────────────────────────────────────────────────
-
   Future<void> saveProducts(List<Map<String, dynamic>> products) async {
     await _productBox.put(_keyProducts, jsonEncode(products));
   }
@@ -25,8 +23,6 @@ class LocalCacheService {
       return [];
     }
   }
-
-  // ── Categories ────────────────────────────────────────────────────────────
 
   Future<void> saveCategories(List<Map<String, dynamic>> categories) async {
     await _categoryBox.put(_keyCategories, jsonEncode(categories));
@@ -42,7 +38,6 @@ class LocalCacheService {
     }
   }
 
-  // ── Cart (managed by CartLocalDataSource via Hive cartBox) ────────────────
   Future<void> saveCart(List<Map<String, dynamic>> items) async {}
   Future<List<Map<String, dynamic>>> getCart() async => [];
   Future<void> clearCart() async {}

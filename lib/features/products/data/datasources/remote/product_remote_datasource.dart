@@ -112,7 +112,6 @@ class ProductRemoteDataSource {
     }
   }
 
-  /// Handles `{success, data: {products: [...]}}` and `{products: [...]}` and raw `[...]`
   List<dynamic> _extractList(dynamic raw, String key) {
     if (raw == null) return [];
     if (raw is List) return raw;

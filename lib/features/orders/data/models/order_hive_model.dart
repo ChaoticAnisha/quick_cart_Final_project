@@ -25,7 +25,6 @@ class OrderHiveModel extends HiveObject {
   @HiveField(6)
   final String createdAt;
 
-  /// Items stored as List<Map> — Hive handles this natively.
   @HiveField(7)
   final List<Map> items;
 

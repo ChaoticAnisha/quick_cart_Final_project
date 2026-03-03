@@ -140,7 +140,6 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // ── Map ──────────────────────────────────────────────────────────
           FlutterMap(
             mapController: _mapController,
             options: MapOptions(
@@ -171,7 +170,6 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
             ],
           ),
 
-          // ── Top bar ──────────────────────────────────────────────────────
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -209,7 +207,6 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
             ),
           ),
 
-          // ── Current location button ───────────────────────────────────────
           Positioned(
             right: 16,
             bottom: 160,
@@ -228,7 +225,6 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
             ),
           ),
 
-          // ── Address card + confirm button ─────────────────────────────────
           Positioned(
             left: 0,
             right: 0,

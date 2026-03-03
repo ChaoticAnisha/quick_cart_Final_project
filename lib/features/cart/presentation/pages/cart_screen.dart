@@ -30,8 +30,6 @@ class CartScreen extends ConsumerWidget {
   }
 }
 
-// ─── Empty state ──────────────────────────────────────────────────────────────
-
 class _EmptyCartScreen extends StatelessWidget {
   final CartViewModel cartVM;
   const _EmptyCartScreen({required this.cartVM});
@@ -109,8 +107,6 @@ class _EmptyCartScreen extends StatelessWidget {
     );
   }
 }
-
-// ─── Cart with items ──────────────────────────────────────────────────────────
 
 class _CartWithItemsScreen extends ConsumerStatefulWidget {
   final List<CartItem> items;
@@ -704,8 +700,6 @@ class _CartWithItemsScreenState extends ConsumerState<_CartWithItemsScreen> {
     );
   }
 }
-
-// ─── Shared gradient background ───────────────────────────────────────────────
 
 class _GradientBg extends StatelessWidget {
   final Widget child;

@@ -108,7 +108,6 @@ class _SensorScreenState extends State<SensorScreen>
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // ── Shake card ──────────────────────────────────
             AnimatedBuilder(
               animation: _shakeAnim,
               builder: (_, child) {
@@ -204,7 +203,6 @@ class _SensorScreenState extends State<SensorScreen>
             ),
             const SizedBox(height: 16),
 
-            // ── Tilt card ───────────────────────────────────
             _SensorCard(
               color: cardColor,
               child: Column(
@@ -291,7 +289,6 @@ class _SensorScreenState extends State<SensorScreen>
             ),
             const SizedBox(height: 16),
 
-            // ── Info card ───────────────────────────────────
             _SensorCard(
               color: cardColor,
               child: Column(
@@ -343,8 +340,6 @@ class _SensorScreenState extends State<SensorScreen>
     );
   }
 }
-
-// ── Helper widgets ──────────────────────────────────────────────────────────
 
 class _SensorCard extends StatelessWidget {
   const _SensorCard({required this.child, required this.color});

@@ -13,8 +13,6 @@ import 'package:quick_cart/features/products/presentation/state/product_state.da
 import 'package:quick_cart/features/wishlist/presentation/viewmodel/wishlist_viewmodel.dart';
 import 'package:quick_cart/features/products/presentation/viewmodel/recently_viewed_viewmodel.dart';
 
-// ─── CONSTANTS ──────────────────────────────────────────────────────────────
-
 const _kGold = Color(0xFFFFD700);
 const _kOrange = Color(0xFFFFA500);
 const _kGradient = LinearGradient(colors: [_kGold, _kOrange]);
@@ -29,8 +27,6 @@ final _categories = [
   {'img': 'image 43.png', 'text': 'Oil & Masala'},
   {'img': 'image 44 (1).png', 'text': 'Dairy & Bread'},
 ];
-
-// ─── SCREEN ─────────────────────────────────────────────────────────────────
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -213,8 +209,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 }
 
-// ─── HEADER ─────────────────────────────────────────────────────────────────
-
 class _Header extends StatelessWidget {
   final String userName;
   final int cartCount;
@@ -334,8 +328,6 @@ class _Header extends StatelessWidget {
   }
 }
 
-// ─── SEARCH BAR ─────────────────────────────────────────────────────────────
-
 class _SearchBar extends StatelessWidget {
   final TextEditingController controller;
   const _SearchBar({required this.controller});
@@ -367,8 +359,6 @@ class _SearchBar extends StatelessWidget {
     );
   }
 }
-
-// ─── STATS ROW ──────────────────────────────────────────────────────────────
 
 class _StatsRow extends StatelessWidget {
   final int cartCount;
@@ -463,8 +453,6 @@ class _StatCard extends StatelessWidget {
     );
   }
 }
-
-// ─── CATEGORIES ─────────────────────────────────────────────────────────────
 
 class _CategoriesSection extends StatelessWidget {
   final void Function(String? categoryName) onCategoryTap;
@@ -571,8 +559,6 @@ class _CategoryCard extends StatelessWidget {
     );
   }
 }
-
-// ─── RECENTLY VIEWED ────────────────────────────────────────────────────────
 
 class _RecentlyViewedSection extends ConsumerWidget {
   @override
@@ -688,8 +674,6 @@ class _RecentlyViewedSection extends ConsumerWidget {
     );
   }
 }
-
-// ─── POPULAR PRODUCTS ───────────────────────────────────────────────────────
 
 class _PopularProductsSection extends ConsumerWidget {
   final CartState cartState;
@@ -1019,7 +1003,7 @@ class _ProductCard extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            inCart ? '✓ Added' : '+ Add',
+                            inCart ? 'Added' : '+ Add',
                             style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 11,

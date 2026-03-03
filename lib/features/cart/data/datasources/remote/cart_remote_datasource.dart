@@ -13,7 +13,6 @@ class CartRemoteDataSource {
     return _apiClient!;
   }
 
-  /// GET /cart — returns list of cart items for the authenticated user.
   Future<List<CartItemModel>> getCart() async {
     try {
       final client = await _getClient();
@@ -23,17 +22,14 @@ class CartRemoteDataSource {
       final items = list
           .map((j) => CartItemModel.fromJson(j as Map<String, dynamic>))
           .toList();
-      // Cache for offline use
       _cache.saveCart(items.map((i) => i.toJson()).toList());
       return items;
     } catch (_) {
-      // Offline fallback — return last known cart
       final cached = await _cache.getCart();
       return cached.map((j) => CartItemModel.fromJson(j)).toList();
     }
   }
 
-  /// POST /cart — adds an item (or increments quantity if already in cart).
   Future<CartItemModel?> addItem({
     required String productId,
     required String productName,
@@ -58,12 +54,10 @@ class CartRemoteDataSource {
       if (json != null) return CartItemModel.fromJson(json);
       return null;
     } catch (_) {
-      // Offline: return null, optimistic state is already applied
       return null;
     }
   }
 
-  /// PUT /cart/:productId — updates quantity.
   Future<bool> updateQuantity(String productId, int quantity) async {
     try {
       final client = await _getClient();
@@ -77,7 +71,6 @@ class CartRemoteDataSource {
     }
   }
 
-  /// DELETE /cart/:productId — removes a single item.
   Future<bool> removeItem(String productId) async {
     try {
       final client = await _getClient();
@@ -88,7 +81,6 @@ class CartRemoteDataSource {
     }
   }
 
-  /// DELETE /cart — clears all items.
   Future<bool> clearCart() async {
     try {
       final client = await _getClient();
@@ -100,8 +92,6 @@ class CartRemoteDataSource {
       return false;
     }
   }
-
-  // ─── helpers ───────────────────────────────────────────────────────────────
 
   List<dynamic> _extractList(dynamic raw) {
     if (raw == null) return [];

@@ -10,10 +10,8 @@ import 'app.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Hive
   await Hive.initFlutter();
 
-  // Register Hive TypeAdapters
   if (!Hive.isAdapterRegistered(AppBoxes.userHiveModelTypeId)) {
     Hive.registerAdapter(UserHiveModelAdapter());
   }
@@ -21,7 +19,6 @@ void main() async {
     Hive.registerAdapter(OrderHiveModelAdapter());
   }
 
-  // Open boxes eagerly so they are ready before first use
   await Future.wait([
     Hive.openBox<UserHiveModel>(AppBoxes.userBox),
     Hive.openBox<Map>(AppBoxes.cartBox),
@@ -33,7 +30,6 @@ void main() async {
     Hive.openBox<String>(AppBoxes.recentlyViewedBox),
   ]);
 
-  // Request camera and storage permissions on startup
   await PermissionService().requestCameraAndPhotos();
 
   runApp(const ProviderScope(child: App()));
