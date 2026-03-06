@@ -69,6 +69,40 @@ class RegisterUsecase {
   }
 }
 
+// ForgotPassword UseCase
+final forgotPasswordUsecaseProvider = Provider<ForgotPasswordUsecase>((ref) {
+  final authRepository = ref.read(authRepositoryImplProvider);
+  return ForgotPasswordUsecase(authRepository: authRepository);
+});
+
+class ForgotPasswordUsecase {
+  final IAuthRepository _authRepository;
+
+  ForgotPasswordUsecase({required IAuthRepository authRepository})
+    : _authRepository = authRepository;
+
+  Future<Either<Failure, bool>> call({required String email}) {
+    return _authRepository.forgotPassword(email: email);
+  }
+}
+
+// GetCurrentUser UseCase
+final getCurrentUserUsecaseProvider = Provider<GetCurrentUserUsecase>((ref) {
+  final authRepository = ref.read(authRepositoryImplProvider);
+  return GetCurrentUserUsecase(authRepository: authRepository);
+});
+
+class GetCurrentUserUsecase {
+  final IAuthRepository _authRepository;
+
+  GetCurrentUserUsecase({required IAuthRepository authRepository})
+    : _authRepository = authRepository;
+
+  Future<Either<Failure, AuthEntity>> call() {
+    return _authRepository.getCurrentUser();
+  }
+}
+
 // Logout UseCase
 final logoutUsecaseProvider = Provider<LogoutUsecase>((ref) {
   final authRepository = ref.read(authRepositoryImplProvider);

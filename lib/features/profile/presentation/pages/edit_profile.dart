@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/presentation/viewmodel/auth_viewmodel.dart';
 import '../../../../core/utils/validators.dart';
+import '../../../../core/services/camera_service.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -18,6 +20,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _addressController = TextEditingController();
 
   bool _isLoading = false;
+  File? _selectedImage;
+  final _cameraService = CameraService();
 
   @override
   void initState() {
@@ -29,6 +33,47 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final authState = ref.read(authViewModelProvider);
     _nameController.text = authState.user?.name ?? '';
     _emailController.text = authState.user?.email ?? '';
+  }
+
+  Future<void> _pickImage(ImageSourceType source) async {
+    final file = await _cameraService.pickImage(source: source);
+    if (file != null) {
+      setState(() => _selectedImage = file);
+    }
+  }
+
+  void _showImageSourceSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            ListTile(
+              leading: const Icon(Icons.camera_alt, color: Color(0xFFFFA500)),
+              title: const Text('Take a photo'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSourceType.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: Color(0xFFFFA500)),
+              title: const Text('Choose from gallery'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSourceType.gallery);
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _saveProfile() async {
@@ -113,24 +158,22 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         ),
                       ],
                     ),
-                    child: const CircleAvatar(
+                    child: CircleAvatar(
                       radius: 55,
-                      backgroundColor: Color(0xFFFFA500),
-                      child: Icon(Icons.person, size: 55, color: Colors.white),
+                      backgroundColor: const Color(0xFFFFA500),
+                      backgroundImage: _selectedImage != null
+                          ? FileImage(_selectedImage!)
+                          : null,
+                      child: _selectedImage == null
+                          ? const Icon(Icons.person, size: 55, color: Colors.white)
+                          : null,
                     ),
                   ),
                   Positioned(
                     bottom: 0,
                     right: 0,
                     child: GestureDetector(
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Photo upload coming soon!'),
-                            backgroundColor: Color(0xFFFFA500),
-                          ),
-                        );
-                      },
+                      onTap: _showImageSourceSheet,
                       child: Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(

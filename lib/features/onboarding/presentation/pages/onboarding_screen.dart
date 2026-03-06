@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_routes.dart';
 
 // ==================== ONBOARDING SCREEN 1 ====================
@@ -478,10 +480,14 @@ class OnboardingThree extends StatelessWidget {
                     ],
                   ),
                   child: ElevatedButton(
-                    onPressed: () => Navigator.pushReplacementNamed(
-                      context,
-                      AppRoutes.login,
-                    ),
+                    onPressed: () async {
+                      // Mark onboarding as completed so splash skips it next time
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setBool(AppConstants.keyIsFirstTime, false);
+                      if (context.mounted) {
+                        Navigator.pushReplacementNamed(context, AppRoutes.login);
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: const Color(0xFFFFA500),

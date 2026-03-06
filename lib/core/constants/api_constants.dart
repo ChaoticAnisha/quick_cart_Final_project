@@ -1,6 +1,11 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 class ApiConstants {
-  // Backend running on port 5000
-  static const String baseUrl = 'http://192.168.1.100:5000/api';
+  static String get baseUrl =>
+      kIsWeb ? 'http://localhost:5000/api' : 'http://192.168.1.100:5000/api';
+
+  static String get imageBaseUrl =>
+      kIsWeb ? 'http://localhost:5000' : 'http://192.168.1.100:5000';
 
   // Auth Endpoints
   static const String login = '/auth/login';
@@ -9,9 +14,6 @@ class ApiConstants {
   static const String profile = '/auth/profile';
   static const String updateProfile = '/auth/profile';
   static const String uploadAvatar = '/auth/upload-avatar';
-
-  // Image Base
-  static const String imageBaseUrl = 'http://192.168.1.100:5000';
 
   // Timeouts
   static const Duration connectionTimeout = Duration(seconds: 30);

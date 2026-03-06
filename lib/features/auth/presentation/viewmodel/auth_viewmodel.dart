@@ -11,12 +11,16 @@ class AuthViewModel extends Notifier<AuthState> {
   late final RegisterUsecase _registerUsecase;
   late final LoginUsecase _loginUsecase;
   late final LogoutUsecase _logoutUsecase;
+  late final ForgotPasswordUsecase _forgotPasswordUsecase;
+  late final GetCurrentUserUsecase _getCurrentUserUsecase;
 
   @override
   AuthState build() {
     _registerUsecase = ref.read(registerUsecaseProvider);
     _loginUsecase = ref.read(loginUsecaseProvider);
     _logoutUsecase = ref.read(logoutUsecaseProvider);
+    _forgotPasswordUsecase = ref.read(forgotPasswordUsecaseProvider);
+    _getCurrentUserUsecase = ref.read(getCurrentUserUsecaseProvider);
     return const AuthState();
   }
 
@@ -75,6 +79,37 @@ class AuthViewModel extends Notifier<AuthState> {
         status: AuthStatus.unauthenticated,
         user: null,
       ),
+    );
+  }
+
+  Future<bool> forgotPassword({required String email}) async {
+    state = state.copyWith(status: AuthStatus.loading);
+    final result = await _forgotPasswordUsecase(email: email);
+    return result.fold(
+      (failure) {
+        state = state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: failure.message,
+        );
+        return false;
+      },
+      (_) {
+        state = state.copyWith(status: AuthStatus.initial);
+        return true;
+      },
+    );
+  }
+
+  Future<void> fetchCurrentUser() async {
+    final result = await _getCurrentUserUsecase();
+    result.fold(
+      (_) => null, // silently fail — token may be expired
+      (authEntity) {
+        state = state.copyWith(
+          status: AuthStatus.authenticated,
+          user: authEntity.toUser(),
+        );
+      },
     );
   }
 

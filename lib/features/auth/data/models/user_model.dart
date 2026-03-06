@@ -15,10 +15,11 @@ class UserModel {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id']?.toString(),
+      // MongoDB returns _id; backend may also expose id
+      id: (json['_id'] ?? json['id'])?.toString(),
       name: json['name'] ?? '',
       email: json['email'] ?? '',
-      avatar: json['avatar'],
+      avatar: json['avatar'] ?? json['profilePicture'],
       createdAt: json['createdAt'],
     );
   }

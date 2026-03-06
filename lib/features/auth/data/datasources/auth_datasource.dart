@@ -25,6 +25,7 @@ abstract class IAuthRemoteDataSource {
   });
   Future<void> logout();
   Future<AuthResponseModel> getProfile();
+  Future<void> forgotPassword({required String email});
 }
 
 // Interface for local data source

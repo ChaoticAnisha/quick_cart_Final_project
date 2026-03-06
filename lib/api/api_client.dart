@@ -1,5 +1,6 @@
-import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/constants/api_constants.dart';
 import '../core/constants/app_constants.dart';
@@ -82,27 +83,41 @@ class ApiClient {
     );
   }
 
-  // UPLOAD IMAGE
+  // UPLOAD IMAGE — uses XFile so it works on both mobile and web
   Future<Response> uploadImage(
     String path,
-    File imageFile, {
+    XFile imageFile, {
     String fieldName = 'avatar',
   }) async {
-    String fileName = imageFile.path.split('/').last;
-    FormData formData = FormData.fromMap({
-      fieldName: await MultipartFile.fromFile(
-        imageFile.path,
-        filename: fileName,
-      ),
-    });
-
-    return await _dio.post(
-      path,
-      data: formData,
-      options: Options(headers: {'Content-Type': 'multipart/form-data'}),
-      onSendProgress: (sent, total) {
-        print(' Upload: ${(sent / total * 100).toStringAsFixed(0)}%');
-      },
-    );
+    if (kIsWeb) {
+      // Web: read bytes directly
+      final bytes = await imageFile.readAsBytes();
+      final fileName = imageFile.name;
+      final formData = FormData.fromMap({
+        fieldName: MultipartFile.fromBytes(bytes, filename: fileName),
+      });
+      return await _dio.post(
+        path,
+        data: formData,
+        options: Options(headers: {'Content-Type': 'multipart/form-data'}),
+      );
+    } else {
+      // Mobile: use file path
+      final fileName = imageFile.path.split('/').last;
+      final formData = FormData.fromMap({
+        fieldName: await MultipartFile.fromFile(
+          imageFile.path,
+          filename: fileName,
+        ),
+      });
+      return await _dio.post(
+        path,
+        data: formData,
+        options: Options(headers: {'Content-Type': 'multipart/form-data'}),
+        onSendProgress: (sent, total) {
+          debugPrint(' Upload: ${(sent / total * 100).toStringAsFixed(0)}%');
+        },
+      );
+    }
   }
 }

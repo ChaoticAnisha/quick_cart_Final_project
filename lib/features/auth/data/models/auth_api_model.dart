@@ -59,7 +59,8 @@ class AuthResponseModel {
     return AuthResponseModel(
       success: json['success'] ?? true,
       message: json['message'] ?? '',
-      data: json['data'] ?? {},
+      // Backend returns {token, user, message} at root — not nested under 'data'
+      data: json,
     );
   }
 }

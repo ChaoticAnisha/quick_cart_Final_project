@@ -97,4 +97,20 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
       throw Exception('Get profile error: $e');
     }
   }
+
+  @override
+  Future<void> forgotPassword({required String email}) async {
+    try {
+      final client = await _getClient();
+      final response = await client.post(
+        ApiEndpoints.forgotPassword,
+        data: {'email': email},
+      );
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw Exception(response.data['message'] ?? 'Failed to send reset email');
+      }
+    } catch (e) {
+      throw Exception('Forgot password error: $e');
+    }
+  }
 }

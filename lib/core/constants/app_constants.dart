@@ -9,4 +9,8 @@ class AppConstants {
   static const String keyUserName = 'user_name';
   static const String keyUserAvatar = 'user_avatar';
   static const String keyIsLoggedIn = 'is_logged_in';
+  static const String keyIsFirstTime = 'is_first_time';
+  static const String keyUserRole = 'user_role';
+  static const String keyUserPhone = 'user_phone';
+  static const String keyUserAddress = 'user_address';
 }
