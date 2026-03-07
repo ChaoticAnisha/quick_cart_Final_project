@@ -68,5 +68,43 @@ void main() {
 
       expect(find.text('Logout'), findsOneWidget);
     });
+
+    // ── Test 21: shows My Orders menu item ───────────────────────────────
+    testWidgets('shows My Orders menu item', (tester) async {
+      await pumpScreen(
+        tester,
+        const ProfileScreen(),
+        overrides: makeOverrides(),
+      );
+      await tester.pump();
+
+      expect(find.text('My Orders'), findsWidgets);
+    });
+
+    // ── Test 22: shows Personal Information section label ─────────────────
+    testWidgets('shows Personal Information section', (tester) async {
+      await pumpScreen(
+        tester,
+        const ProfileScreen(),
+        overrides: makeOverrides(),
+      );
+      await tester.pump();
+
+      expect(find.text('Personal Information'), findsOneWidget);
+    });
+
+    // ── Test 23: shows guest prompt when not authenticated ────────────────
+    testWidgets('shows sign-in prompt for unauthenticated user', (tester) async {
+      await pumpScreen(
+        tester,
+        const ProfileScreen(),
+        overrides: makeOverrides(
+          authState: const AuthState(status: AuthStatus.unauthenticated),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.textContaining('sign'), findsWidgets);
+    });
   });
 }

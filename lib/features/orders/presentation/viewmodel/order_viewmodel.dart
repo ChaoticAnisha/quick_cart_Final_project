@@ -10,6 +10,7 @@ final orderViewModelProvider =
     createOrderUsecase: ref.read(createOrderUsecaseProvider),
     getUserOrdersUsecase: ref.read(getUserOrdersUsecaseProvider),
     getOrderByIdUsecase: ref.read(getOrderByIdUsecaseProvider),
+    cancelOrderUsecase: ref.read(cancelOrderUsecaseProvider),
   );
 });
 
@@ -17,14 +18,17 @@ class OrderViewModel extends StateNotifier<OrderState> {
   final CreateOrderUsecase _createOrder;
   final GetUserOrdersUsecase _getUserOrders;
   final GetOrderByIdUsecase _getOrderById;
+  final CancelOrderUsecase _cancelOrder;
 
   OrderViewModel({
     required CreateOrderUsecase createOrderUsecase,
     required GetUserOrdersUsecase getUserOrdersUsecase,
     required GetOrderByIdUsecase getOrderByIdUsecase,
+    required CancelOrderUsecase cancelOrderUsecase,
   })  : _createOrder = createOrderUsecase,
         _getUserOrders = getUserOrdersUsecase,
         _getOrderById = getOrderByIdUsecase,
+        _cancelOrder = cancelOrderUsecase,
         super(const OrderState());
 
   Future<void> loadOrders() async {
@@ -76,6 +80,29 @@ class OrderViewModel extends StateNotifier<OrderState> {
         status: OrderLoadStatus.success,
         currentOrder: order,
       ),
+    );
+  }
+
+  Future<OrderEntity?> cancelOrder(String id) async {
+    state = state.copyWith(status: OrderLoadStatus.loading, clearError: true);
+    final result = await _cancelOrder(id);
+    return result.fold(
+      (failure) {
+        state = state.copyWith(
+          status: OrderLoadStatus.error,
+          errorMessage: failure.message,
+        );
+        return null;
+      },
+      (order) {
+        final updated = state.orders.map((o) => o.id == id ? order : o).toList();
+        state = state.copyWith(
+          status: OrderLoadStatus.success,
+          orders: updated,
+          currentOrder: order,
+        );
+        return order;
+      },
     );
   }
 

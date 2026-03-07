@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../../api/api_client.dart';
 import '../../../../../api/api_endpoints.dart';
@@ -27,6 +28,14 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
     }
   }
 
+  String _extractMessage(dynamic e, String fallback) {
+    if (e is DioException) {
+      final data = e.response?.data;
+      if (data is Map) return data['message']?.toString() ?? fallback;
+    }
+    return fallback;
+  }
+
   @override
   Future<AuthResponseModel> register({
     required String name,
@@ -45,6 +54,8 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
       } else {
         throw Exception('Registration failed');
       }
+    } on DioException catch (e) {
+      throw Exception(_extractMessage(e, 'Registration failed'));
     } catch (e) {
       throw Exception('Registration error: $e');
     }
@@ -67,6 +78,8 @@ class AuthRemoteDatasource implements IAuthRemoteDataSource {
       } else {
         throw Exception('Login failed');
       }
+    } on DioException catch (e) {
+      throw Exception(_extractMessage(e, 'Login failed'));
     } catch (e) {
       throw Exception('Login error: $e');
     }

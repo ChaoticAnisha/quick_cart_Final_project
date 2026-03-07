@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:quick_cart/api/api_endpoints.dart';
 import 'auth_entities.dart';
 
 class User extends Equatable {
@@ -25,7 +26,7 @@ class User extends Equatable {
       email: json['email'] ?? '',
       phone: json['phone'],
       address: json['address'],
-      profilePicture: json['profilePicture'],
+      profilePicture: json['profilePicture'] ?? json['avatar'],
     );
   }
 
@@ -59,13 +60,8 @@ class User extends Equatable {
   }
 
   String? getProfilePictureUrl() {
-    if (profilePicture == null || profilePicture!.isEmpty) {
-      return null;
-    }
-    if (profilePicture!.startsWith('http')) {
-      return profilePicture;
-    }
-    return 'http://192.168.1.100:3000$profilePicture'; 
+    if (profilePicture == null || profilePicture!.isEmpty) return null;
+    return ApiEndpoints.getImageUrl(profilePicture!);
   }
 
   AuthEntity toAuthEntity() {

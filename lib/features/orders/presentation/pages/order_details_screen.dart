@@ -1,10 +1,71 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../api/api_endpoints.dart';
 import '../../domain/entities/order_entity.dart';
+import '../viewmodel/order_viewmodel.dart';
 
-class OrderDetailsScreen extends StatelessWidget {
+class OrderDetailsScreen extends ConsumerStatefulWidget {
   final OrderEntity order;
   const OrderDetailsScreen({super.key, required this.order});
+
+  @override
+  ConsumerState<OrderDetailsScreen> createState() => _OrderDetailsScreenState();
+}
+
+class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
+  late OrderEntity _order;
+  bool _cancelling = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _order = widget.order;
+  }
+
+  bool get _canCancel {
+    final s = _order.status.toLowerCase();
+    return s == 'pending' || s == 'processing';
+  }
+
+  Future<void> _onCancel() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Cancel Order'),
+        content: const Text('Are you sure you want to cancel this order?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('No'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Yes, Cancel', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _cancelling = true);
+    final result = await ref
+        .read(orderViewModelProvider.notifier)
+        .cancelOrder(_order.id);
+    if (!mounted) return;
+    setState(() {
+      _cancelling = false;
+      if (result != null) _order = result;
+    });
+    if (result != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Order cancelled successfully'),
+          backgroundColor: Color(0xFF10B981),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +100,10 @@ class OrderDetailsScreen extends StatelessWidget {
                           _buildDeliveryCard(),
                           const SizedBox(height: 20),
                           _buildSummaryCard(),
+                          if (_canCancel) ...[
+                            const SizedBox(height: 20),
+                            _buildCancelButton(),
+                          ],
                           const SizedBox(height: 30),
                         ],
                       ),
@@ -56,6 +121,10 @@ class OrderDetailsScreen extends StatelessWidget {
       _buildStatusTracker(),
       const SizedBox(height: 20),
       _buildItemsList(),
+      if (_canCancel) ...[
+        const SizedBox(height: 20),
+        _buildCancelButton(),
+      ],
     ],
   );
 
@@ -67,6 +136,37 @@ class OrderDetailsScreen extends StatelessWidget {
       _buildSummaryCard(),
     ],
   );
+
+  Widget _buildCancelButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _cancelling ? null : _onCancel,
+        icon: _cancelling
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.red,
+                ),
+              )
+            : const Icon(Icons.cancel_outlined, color: Colors.red, size: 18),
+        label: Text(
+          _cancelling ? 'Cancelling…' : 'Cancel Order',
+          style: const TextStyle(
+            color: Colors.red,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: Colors.red),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      ),
+    );
+  }
 
   Widget _buildHeader(BuildContext context) {
     return Container(
@@ -93,13 +193,13 @@ class OrderDetailsScreen extends StatelessWidget {
                 const Text('Order Details',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
                 Text(
-                  '#${order.id.length > 12 ? order.id.substring(order.id.length - 12) : order.id}',
+                  '#${_order.id.length > 12 ? _order.id.substring(_order.id.length - 12) : _order.id}',
                   style: const TextStyle(fontSize: 12, color: Colors.white70),
                 ),
               ],
             ),
           ),
-          _statusBadge(order.status),
+          _statusBadge(_order.status),
         ],
       ),
     );
@@ -122,7 +222,7 @@ class OrderDetailsScreen extends StatelessWidget {
 
   Widget _buildStatusTracker() {
     final steps = ['Pending', 'Processing', 'Shipped', 'Delivered'];
-    final currentIndex = _stepIndex(order.status);
+    final currentIndex = _stepIndex(_order.status);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -190,7 +290,7 @@ class OrderDetailsScreen extends StatelessWidget {
       children: [
         const Text('Items', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
-        ...order.items.map((item) => _buildItemRow(item)),
+        ..._order.items.map((item) => _buildItemRow(item)),
       ],
     );
   }
@@ -267,7 +367,7 @@ class OrderDetailsScreen extends StatelessWidget {
             const Text('Delivery Address', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
           ]),
           const SizedBox(height: 10),
-          Text(order.deliveryAddress,
+          Text(_order.deliveryAddress,
               style: TextStyle(fontSize: 13, color: Colors.grey.shade700, height: 1.5)),
           const SizedBox(height: 12),
           Row(children: [
@@ -276,7 +376,7 @@ class OrderDetailsScreen extends StatelessWidget {
             const Text('Payment', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
           ]),
           const SizedBox(height: 8),
-          _paymentBadge(order.paymentMethod),
+          _paymentBadge(_order.paymentMethod),
         ],
       ),
     );
@@ -301,7 +401,7 @@ class OrderDetailsScreen extends StatelessWidget {
 
   Widget _buildSummaryCard() {
     const deliveryFee = 30.0;
-    final subtotal = order.totalAmount - deliveryFee;
+    final subtotal = _order.totalAmount - deliveryFee;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -327,7 +427,7 @@ class OrderDetailsScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text('Total', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-              Text('₹${order.totalAmount.toStringAsFixed(0)}',
+              Text('₹${_order.totalAmount.toStringAsFixed(0)}',
                   style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFFFA500))),
             ],
           ),

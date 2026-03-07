@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:quick_cart/core/services/storage/local_cache_service.dart';
 import 'package:quick_cart/features/cart/data/datasources/remote/cart_remote_datasource.dart';
+import 'package:quick_cart/features/cart/data/models/cart_item_model.dart';
 import 'package:quick_cart/features/cart/presentation/viewmodel/cart_viewmodel.dart';
 
 // Mocks
@@ -145,5 +146,45 @@ void main() {
     vm.clearCart();
     expect(vm.state.items, isEmpty);
     verify(() => mockRemote.clearCart()).called(1);
+  });
+
+  // ── Test 10: totalAmount returns correct sum ──────────────────────────────
+  test('totalAmount returns sum of price × quantity for all items', () async {
+    when(() => mockRemote.addItem(
+          productId: any(named: 'productId'),
+          productName: any(named: 'productName'),
+          price: any(named: 'price'),
+          quantity: any(named: 'quantity'),
+          image: any(named: 'image'),
+        )).thenAnswer((_) async => null);
+
+    final vm = makeVM();
+    await Future.delayed(Duration.zero);
+
+    vm.addToCartById(productId: 'p1', productName: 'Rice', price: 200);
+    vm.addToCartById(productId: 'p2', productName: 'Dal', price: 150);
+    vm.addToCartById(productId: 'p1', productName: 'Rice', price: 200); // qty → 2
+
+    // p1: 200×2=400, p2: 150×1=150 → total 550
+    expect(vm.totalAmount, 550.0);
+  });
+
+  // ── Test 11: loadCart populates state from remote ─────────────────────────
+  test('loadCart() populates state with items from remote', () async {
+    const tRemoteItem = CartItemModel(
+      id: 'ci-1',
+      productId: 'prod-remote',
+      productName: 'Potato 2kg',
+      price: 90,
+      quantity: 3,
+    );
+    when(() => mockRemote.getCart()).thenAnswer((_) async => [tRemoteItem]);
+
+    final vm = makeVM();
+    await Future.delayed(Duration.zero); // loadCart completes
+
+    expect(vm.state.items.length, 1);
+    expect(vm.state.items.first.productName, 'Potato 2kg');
+    expect(vm.state.items.first.quantity, 3);
   });
 }

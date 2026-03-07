@@ -101,5 +101,70 @@ void main() {
 
       expect(find.text('Pending'), findsOneWidget);
     });
+
+    // ── Test 18: shows order total amount ─────────────────────────────────
+    testWidgets('shows order total amount', (tester) async {
+      await pumpScreen(
+        tester,
+        const OrdersScreen(),
+        overrides: [
+          orderViewModelProvider.overrideWith(
+            (ref) => FakeOrderViewModel(
+              OrderState(status: OrderLoadStatus.success, orders: [tOrder]),
+            ),
+          ),
+          cartViewModelProvider.overrideWith(
+            (ref) => FakeCartViewModel(const CartState()),
+          ),
+        ],
+      );
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.textContaining('240'), findsWidgets);
+    });
+
+    // ── Test 19: shows order payment method ───────────────────────────────
+    testWidgets('shows payment method on order card', (tester) async {
+      await pumpScreen(
+        tester,
+        const OrdersScreen(),
+        overrides: [
+          orderViewModelProvider.overrideWith(
+            (ref) => FakeOrderViewModel(
+              OrderState(status: OrderLoadStatus.success, orders: [tOrder]),
+            ),
+          ),
+          cartViewModelProvider.overrideWith(
+            (ref) => FakeCartViewModel(const CartState()),
+          ),
+        ],
+      );
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.textContaining('COD'), findsWidgets);
+    });
+
+    // ── Test 20: shows orders header title ────────────────────────────────
+    testWidgets('shows My Orders header title', (tester) async {
+      await pumpScreen(
+        tester,
+        const OrdersScreen(),
+        overrides: [
+          orderViewModelProvider.overrideWith(
+            (ref) => FakeOrderViewModel(
+              const OrderState(status: OrderLoadStatus.success, orders: []),
+            ),
+          ),
+          cartViewModelProvider.overrideWith(
+            (ref) => FakeCartViewModel(const CartState()),
+          ),
+        ],
+      );
+      await tester.pump();
+
+      expect(find.text('My Orders'), findsOneWidget);
+    });
   });
 }

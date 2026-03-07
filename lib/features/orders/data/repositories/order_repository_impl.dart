@@ -59,4 +59,19 @@ class OrderRepositoryImpl implements IOrderRepository {
       return Left(ApiFailure(message: e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, OrderEntity>> cancelOrder(String id) async {
+    try {
+      final order = await _dataSource.cancelOrder(id);
+      return Right(order);
+    } on DioException catch (e) {
+      return Left(ApiFailure(
+        message: e.response?.data['message'] ?? 'Failed to cancel order',
+        statusCode: e.response?.statusCode,
+      ));
+    } catch (e) {
+      return Left(ApiFailure(message: e.toString()));
+    }
+  }
 }

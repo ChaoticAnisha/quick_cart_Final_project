@@ -27,6 +27,10 @@ void main() async {
     Hive.openBox<Map>(AppBoxes.cartBox),
     Hive.openBox(AppBoxes.sessionBox),
     Hive.openBox<OrderHiveModel>(AppBoxes.orderBox),
+    Hive.openBox<String>(AppBoxes.productBox),
+    Hive.openBox<String>(AppBoxes.categoryBox),
+    Hive.openBox<String>(AppBoxes.wishlistBox),
+    Hive.openBox<String>(AppBoxes.recentlyViewedBox),
   ]);
 
   // Request camera and storage permissions on startup

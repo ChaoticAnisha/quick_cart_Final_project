@@ -20,6 +20,9 @@ import 'package:quick_cart/features/products/presentation/state/product_state.da
 import 'package:quick_cart/features/products/presentation/viewmodel/product_viewmodel.dart';
 import 'package:quick_cart/features/checkout/presentation/state/checkout_state.dart';
 import 'package:quick_cart/features/checkout/presentation/viewmodel/checkout_viewmodel.dart';
+import 'package:quick_cart/features/products/domain/entities/product.dart';
+import 'package:quick_cart/features/products/presentation/viewmodel/recently_viewed_viewmodel.dart';
+import 'package:quick_cart/features/wishlist/presentation/viewmodel/wishlist_viewmodel.dart';
 
 // ─── No-Op implementations ────────────────────────────────────────────────────
 
@@ -83,6 +86,28 @@ class _NoOpOrderRepo implements IOrderRepository {
   @override
   Future<Either<Failure, OrderEntity>> getOrderById(String id) async =>
       const Left(ApiFailure(message: 'NoOp'));
+
+  @override
+  Future<Either<Failure, OrderEntity>> cancelOrder(String id) async =>
+      const Left(ApiFailure(message: 'NoOp'));
+}
+
+/// Fake WishlistViewModel — returns empty list, no Hive access.
+class FakeWishlistViewModel extends StateNotifier<List<Product>>
+    implements WishlistViewModel {
+  FakeWishlistViewModel() : super([]);
+  @override
+  bool isWishlisted(String productId) => false;
+  @override
+  void toggle(Product product) {}
+}
+
+/// Fake RecentlyViewedViewModel — returns empty list, no Hive access.
+class FakeRecentlyViewedViewModel extends StateNotifier<List<Product>>
+    implements RecentlyViewedViewModel {
+  FakeRecentlyViewedViewModel() : super([]);
+  @override
+  void track(Product product) {}
 }
 
 // ─── Fake ViewModels ──────────────────────────────────────────────────────────
@@ -144,6 +169,7 @@ class FakeOrderViewModel extends OrderViewModel {
           createOrderUsecase: CreateOrderUsecase(_repo),
           getUserOrdersUsecase: GetUserOrdersUsecase(_repo),
           getOrderByIdUsecase: GetOrderByIdUsecase(_repo),
+          cancelOrderUsecase: CancelOrderUsecase(_repo),
         );
 
   @override

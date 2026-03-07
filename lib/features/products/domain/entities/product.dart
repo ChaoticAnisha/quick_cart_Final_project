@@ -43,4 +43,36 @@ class Product extends Equatable {
   ];
 
   bool get isInStock => stock > 0;
+
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      stock: (json['stock'] as num?)?.toInt() ?? 0,
+      categoryId: json['categoryId']?.toString() ?? '',
+      categoryName: json['categoryName']?.toString(),
+      image: json['image']?.toString() ?? '',
+      rating: (json['rating'] as num?)?.toDouble(),
+      reviews: (json['reviews'] as num?)?.toInt(),
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'].toString())
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'description': description,
+    'price': price,
+    'stock': stock,
+    'categoryId': categoryId,
+    if (categoryName != null) 'categoryName': categoryName,
+    'image': image,
+    if (rating != null) 'rating': rating,
+    if (reviews != null) 'reviews': reviews,
+    if (createdAt != null) 'createdAt': createdAt!.toIso8601String(),
+  };
 }

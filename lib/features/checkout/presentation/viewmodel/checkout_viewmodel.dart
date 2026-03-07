@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/checkout_state.dart';
+import '../../../auth/presentation/viewmodel/auth_viewmodel.dart';
 import '../../../cart/presentation/viewmodel/cart_viewmodel.dart';
 import '../../../orders/presentation/viewmodel/order_viewmodel.dart';
 import '../../../orders/domain/entities/order_entity.dart';
@@ -48,7 +49,10 @@ class CheckoutViewModel extends StateNotifier<CheckoutState> {
         )
         .toList();
 
+    final userId = _ref.read(authViewModelProvider).user?.id ?? '';
+
     final params = CreateOrderParams(
+      userId: userId,
       items: items,
       totalAmount: total,
       deliveryAddress: deliveryAddress,

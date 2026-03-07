@@ -2,10 +2,10 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 class ApiConstants {
   static String get baseUrl =>
-      kIsWeb ? 'http://localhost:5000/api' : 'http://192.168.1.100:5000/api';
+      kIsWeb ? 'http://localhost:5000/api' : 'http://10.0.2.2:5000/api';
 
   static String get imageBaseUrl =>
-      kIsWeb ? 'http://localhost:5000' : 'http://192.168.1.100:5000';
+      kIsWeb ? 'http://localhost:5000' : 'http://10.0.2.2:5000';
 
   // Auth Endpoints
   static const String login = '/auth/login';

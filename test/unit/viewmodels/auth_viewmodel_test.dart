@@ -130,4 +130,95 @@ void main() {
     expect(state.user!.phone, '9800000000');
     expect(state.user!.address, 'Kathmandu');
   });
+
+  // ── Test 5: logout clears user and sets unauthenticated ───────────────────
+  test('logout() → status unauthenticated and user null', () async {
+    when(() => mockLogin(any()))
+        .thenAnswer((_) async => const Right(tAuthEntity));
+    when(() => mockLogout()).thenAnswer((_) async => const Right(true));
+
+    final container = makeContainer();
+    addTearDown(container.dispose);
+
+    await container
+        .read(authViewModelProvider.notifier)
+        .login(email: 'test@example.com', password: 'password123');
+    expect(container.read(authViewModelProvider).status,
+        AuthStatus.authenticated);
+
+    await container.read(authViewModelProvider.notifier).logout();
+
+    final state = container.read(authViewModelProvider);
+    expect(state.status, AuthStatus.unauthenticated);
+    expect(state.user, isNull);
+  });
+
+  // ── Test 6: forgotPassword success ────────────────────────────────────────
+  test('forgotPassword() success → returns true', () async {
+    when(() => mockForgotPw(email: any(named: 'email')))
+        .thenAnswer((_) async => const Right(true));
+
+    final container = makeContainer();
+    addTearDown(container.dispose);
+
+    final result = await container
+        .read(authViewModelProvider.notifier)
+        .forgotPassword(email: 'test@example.com');
+
+    expect(result, isTrue);
+  });
+
+  // ── Test 7: forgotPassword failure → returns false ────────────────────────
+  test('forgotPassword() failure → returns false', () async {
+    when(() => mockForgotPw(email: any(named: 'email'))).thenAnswer(
+      (_) async => const Left(ApiFailure(message: 'Email not found')),
+    );
+
+    final container = makeContainer();
+    addTearDown(container.dispose);
+
+    final result = await container
+        .read(authViewModelProvider.notifier)
+        .forgotPassword(email: 'noone@example.com');
+
+    expect(result, isFalse);
+  });
+
+  // ── Test 8: clearError resets errorMessage ────────────────────────────────
+  test('clearError() → clears error message', () async {
+    when(() => mockLogin(any()))
+        .thenAnswer((_) async => const Left(tFailure));
+
+    final container = makeContainer();
+    addTearDown(container.dispose);
+
+    await container
+        .read(authViewModelProvider.notifier)
+        .login(email: 'bad@example.com', password: 'wrong');
+    expect(container.read(authViewModelProvider).errorMessage, isNotNull);
+
+    container.read(authViewModelProvider.notifier).clearError();
+    expect(container.read(authViewModelProvider).errorMessage, isNull);
+  });
+
+  // ── Test 9: register failure → status error ───────────────────────────────
+  test('register() failure → status error and errorMessage set', () async {
+    const dupFailure =
+        ApiFailure(message: 'Email already registered', statusCode: 409);
+    when(() => mockRegister(any()))
+        .thenAnswer((_) async => const Left(dupFailure));
+
+    final container = makeContainer();
+    addTearDown(container.dispose);
+
+    await container.read(authViewModelProvider.notifier).register(
+          name: 'Existing',
+          email: 'existing@example.com',
+          password: 'pass',
+        );
+
+    final state = container.read(authViewModelProvider);
+    expect(state.status, AuthStatus.error);
+    expect(state.errorMessage, 'Email already registered');
+  });
 }

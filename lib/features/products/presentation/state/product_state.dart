@@ -2,6 +2,8 @@ import 'package:equatable/equatable.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/entities/category.dart';
 
+enum SortOption { none, priceAsc, priceDesc, nameAsc, ratingDesc }
+
 class ProductState extends Equatable {
   final List<Product> products;
   final List<Product> allProducts;
@@ -10,6 +12,7 @@ class ProductState extends Equatable {
   final bool isLoading;
   final bool isCategoriesLoading;
   final String? errorMessage;
+  final SortOption sortOption;
 
   const ProductState({
     this.products = const [],
@@ -19,6 +22,7 @@ class ProductState extends Equatable {
     this.isLoading = false,
     this.isCategoriesLoading = false,
     this.errorMessage,
+    this.sortOption = SortOption.none,
   });
 
   ProductState copyWith({
@@ -29,6 +33,7 @@ class ProductState extends Equatable {
     bool? isLoading,
     bool? isCategoriesLoading,
     String? errorMessage,
+    SortOption? sortOption,
     bool clearCategory = false,
     bool clearError = false,
   }) {
@@ -41,6 +46,7 @@ class ProductState extends Equatable {
       isLoading: isLoading ?? this.isLoading,
       isCategoriesLoading: isCategoriesLoading ?? this.isCategoriesLoading,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      sortOption: sortOption ?? this.sortOption,
     );
   }
 
@@ -53,5 +59,6 @@ class ProductState extends Equatable {
     isLoading,
     isCategoriesLoading,
     errorMessage,
+    sortOption,
   ];
 }

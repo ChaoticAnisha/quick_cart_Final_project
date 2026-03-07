@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../api/api_endpoints.dart';
 import '../../../../core/constants/app_routes.dart';
+import '../../../auth/presentation/viewmodel/auth_viewmodel.dart';
 import '../../../cart/presentation/viewmodel/cart_viewmodel.dart';
 import '../../../products/domain/entities/category.dart';
 import '../../../products/domain/entities/product.dart';
@@ -19,13 +20,35 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   int _selectedIndex = 1;
+  String? _initialCategoryName;
+  bool _initialFilterApplied = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialFilterApplied) {
+      _initialCategoryName =
+          ModalRoute.of(context)?.settings.arguments as String?;
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      ref.read(productViewModelProvider.notifier).loadProducts();
-      ref.read(productViewModelProvider.notifier).loadCategories();
+    Future.microtask(() async {
+      await ref.read(productViewModelProvider.notifier).loadProducts();
+      await ref.read(productViewModelProvider.notifier).loadCategories();
+      if (_initialCategoryName != null && mounted && !_initialFilterApplied) {
+        _initialFilterApplied = true;
+        final cats = ref.read(productViewModelProvider).categories;
+        final match = cats.where((c) =>
+            c.name.toLowerCase() == _initialCategoryName!.toLowerCase());
+        if (match.isNotEmpty) {
+          ref
+              .read(productViewModelProvider.notifier)
+              .filterByCategory(match.first.id);
+        }
+      }
     });
   }
 
@@ -175,6 +198,13 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
   }
 
   Widget _buildHeader() {
+    final authUser = ref.watch(authViewModelProvider).user;
+    final profilePicture = authUser?.profilePicture;
+    final userName = authUser?.name ?? '';
+    final avatarUrl = (profilePicture != null && profilePicture.isNotEmpty)
+        ? ApiEndpoints.getImageUrl(profilePicture)
+        : null;
+
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -225,10 +255,23 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                         ),
                       ],
                     ),
-                    child: const CircleAvatar(
+                    child: CircleAvatar(
                       radius: 20,
-                      backgroundColor: Color(0xFFFFA500),
-                      child: Icon(Icons.person, color: Colors.white, size: 22),
+                      backgroundColor: const Color(0xFFFFA500),
+                      backgroundImage: avatarUrl != null
+                          ? NetworkImage(avatarUrl)
+                          : null,
+                      child: avatarUrl == null
+                          ? Text(
+                              userName.isNotEmpty
+                                  ? userName[0].toUpperCase()
+                                  : 'U',
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold),
+                            )
+                          : null,
                     ),
                   ),
                 ),
@@ -378,31 +421,38 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                   fit: StackFit.expand,
                   children: [
                     product.image.isNotEmpty
-                        ? Image.network(
-                            ApiEndpoints.getImageUrl(product.image),
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
-                              color: const Color(0xFFFFF8DC),
-                              child: const Icon(
-                                Icons.image_outlined,
-                                color: Color(0xFFFFA500),
-                                size: 40,
-                              ),
-                            ),
-                            loadingBuilder: (context, child, progress) {
-                              if (progress == null) return child;
-                              return Container(
-                                color: Colors.grey.shade100,
-                                child: const Center(
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Color(0xFFFFA500),
-                                  ),
+                        ? (ApiEndpoints.isNetworkImage(product.image)
+                            ? Image.network(
+                                ApiEndpoints.getImageUrl(product.image),
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(
+                                  color: const Color(0xFFFFF8DC),
+                                  child: const Icon(Icons.image_outlined,
+                                      color: Color(0xFFFFA500), size: 40),
                                 ),
-                              );
-                            },
-                          )
+                                loadingBuilder: (context, child, progress) {
+                                  if (progress == null) return child;
+                                  return Container(
+                                    color: Colors.grey.shade100,
+                                    child: const Center(
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Color(0xFFFFA500)),
+                                    ),
+                                  );
+                                },
+                              )
+                            : Image.asset(
+                                ApiEndpoints.getAssetImagePath(product.image),
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(
+                                  color: const Color(0xFFFFF8DC),
+                                  child: const Icon(Icons.image_outlined,
+                                      color: Color(0xFFFFA500), size: 40),
+                                ),
+                              ))
                         : Container(
                             color: const Color(0xFFFFF8DC),
                             child: const Icon(

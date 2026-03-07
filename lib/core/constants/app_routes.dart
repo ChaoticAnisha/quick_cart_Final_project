@@ -19,4 +19,6 @@ class AppRoutes {
   static const String checkout = '/checkout';
   static const String orderConfirmation = '/order-confirmation';
   static const String sensors = '/sensors';
+  static const String mapPicker = '/map-picker';
+  static const String wishlist = '/wishlist';
 }

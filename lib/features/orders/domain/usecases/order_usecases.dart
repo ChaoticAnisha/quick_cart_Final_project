@@ -45,3 +45,17 @@ class GetOrderByIdUsecase {
   Future<Either<Failure, OrderEntity>> call(String id) =>
       _repo.getOrderById(id);
 }
+
+// ── Cancel Order ─────────────────────────────────────────────────────────────
+
+final cancelOrderUsecaseProvider = Provider<CancelOrderUsecase>((ref) {
+  return CancelOrderUsecase(ref.read(orderRepositoryImplProvider));
+});
+
+class CancelOrderUsecase {
+  final IOrderRepository _repo;
+  CancelOrderUsecase(this._repo);
+
+  Future<Either<Failure, OrderEntity>> call(String id) =>
+      _repo.cancelOrder(id);
+}

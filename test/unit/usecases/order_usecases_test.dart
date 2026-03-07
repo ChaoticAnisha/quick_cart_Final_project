@@ -31,6 +31,7 @@ void main() {
     createdAt: tCreatedAt,
   );
   const tParams = CreateOrderParams(
+    userId: 'user-1',
     items: [tItem],
     totalAmount: 1000,
     deliveryAddress: 'Kathmandu, Bagmati',

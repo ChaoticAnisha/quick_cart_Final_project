@@ -1,4 +1,3 @@
-import 'package:image_picker/image_picker.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../datasources/remote/profile_remote_datasource.dart';
@@ -13,7 +12,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
   Future<User> getProfile() async {
     try {
       final response = await _remoteDataSource.getProfile();
-      return User.fromJson(response.data);
+      final json = response.data;
+      return User.fromJson(json['user'] ?? json);
     } catch (e) {
       throw Exception('Failed to get profile: $e');
     }
@@ -31,19 +31,11 @@ class ProfileRepositoryImpl implements ProfileRepository {
         phone: phone,
         address: address,
       );
-      return User.fromJson(response.data);
+      final json = response.data;
+      return User.fromJson(json['user'] ?? json);
     } catch (e) {
       throw Exception('Failed to update profile: $e');
     }
   }
 
-  @override
-  Future<User> updateProfilePicture(XFile image) async {
-    try {
-      final response = await _remoteDataSource.updateProfilePicture(image);
-      return User.fromJson(response.data);
-    } catch (e) {
-      throw Exception('Failed to update profile picture: $e');
-    }
-  }
 }

@@ -45,10 +45,46 @@ class ProductViewModel extends StateNotifier<ProductState> {
       clearError: true,
     );
     final products = await _dataSource.getProductsByCategory(categoryId);
+
+    // If API returned nothing, fall back to client-side filter by category name.
+    // Backend stores product.category as a string name (e.g. "Dairy"), not ObjectId.
+    if (products.isEmpty && state.allProducts.isNotEmpty) {
+      final category = state.categories
+          .where((c) => c.id == categoryId)
+          .firstOrNull;
+      if (category != null) {
+        final lower = category.name.toLowerCase();
+        final filtered = state.allProducts
+            .where((p) =>
+                (p.categoryName?.toLowerCase() == lower) ||
+                (p.categoryId.toLowerCase() == lower))
+            .toList();
+        state = state.copyWith(products: filtered, isLoading: false);
+        return;
+      }
+    }
+
     state = state.copyWith(products: products, isLoading: false);
   }
 
   void clearFilter() {
     state = state.copyWith(products: state.allProducts, clearCategory: true);
+  }
+
+  void sortProducts(SortOption option) {
+    final sorted = [...state.products];
+    switch (option) {
+      case SortOption.priceAsc:
+        sorted.sort((a, b) => a.price.compareTo(b.price));
+      case SortOption.priceDesc:
+        sorted.sort((a, b) => b.price.compareTo(a.price));
+      case SortOption.nameAsc:
+        sorted.sort((a, b) => a.name.compareTo(b.name));
+      case SortOption.ratingDesc:
+        sorted.sort((a, b) => (b.rating ?? 0).compareTo(a.rating ?? 0));
+      case SortOption.none:
+        break;
+    }
+    state = state.copyWith(products: sorted, sortOption: option);
   }
 }

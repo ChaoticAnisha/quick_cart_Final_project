@@ -77,7 +77,7 @@ class AuthViewModel extends Notifier<AuthState> {
       ),
       (success) => state = state.copyWith(
         status: AuthStatus.unauthenticated,
-        user: null,
+        clearUser: true,
       ),
     );
   }
@@ -114,7 +114,7 @@ class AuthViewModel extends Notifier<AuthState> {
   }
 
   void clearError() {
-    state = state.copyWith(errorMessage: null);
+    state = state.copyWith(clearError: true);
   }
 
   // Method for profile updates

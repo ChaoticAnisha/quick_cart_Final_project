@@ -111,4 +111,36 @@ void main() {
 
     expect(find.text('Required'), findsWidgets);
   });
+
+  // ── Test 9: Pick on Map button is visible ────────────────────────────────
+  testWidgets('shows Pick on Map button', (tester) async {
+    await pumpScreen(tester, const CheckoutScreen(), overrides: makeOverrides());
+    await tester.pump();
+
+    expect(find.text('Pick on Map'), findsOneWidget);
+  });
+
+  // ── Test 10: Placing order with filled form does not show Required error ──
+  testWidgets('filled form does not show Required validation errors',
+      (tester) async {
+    await pumpScreen(tester, const CheckoutScreen(), overrides: makeOverrides());
+    await tester.pump();
+
+    await tester.enterText(
+        find.widgetWithText(TextFormField, 'Full Name'), 'Aarav Sharma');
+    await tester.enterText(
+        find.widgetWithText(TextFormField, 'Phone Number'), '9800000001');
+    await tester.enterText(
+        find.widgetWithText(TextFormField, 'Full Address'), 'Thamel, Kathmandu');
+    await tester.enterText(
+        find.widgetWithText(TextFormField, 'City'), 'Kathmandu');
+    await tester.enterText(
+        find.widgetWithText(TextFormField, 'Pincode'), '44600');
+    await tester.pump();
+
+    await tester.tap(find.byType(ElevatedButton).last);
+    await tester.pump();
+
+    expect(find.text('Required'), findsNothing);
+  });
 }

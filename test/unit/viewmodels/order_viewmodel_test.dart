@@ -12,11 +12,13 @@ import 'package:quick_cart/features/orders/presentation/viewmodel/order_viewmode
 class MockCreateOrderUsecase extends Mock implements CreateOrderUsecase {}
 class MockGetUserOrdersUsecase extends Mock implements GetUserOrdersUsecase {}
 class MockGetOrderByIdUsecase extends Mock implements GetOrderByIdUsecase {}
+class MockCancelOrderUsecase extends Mock implements CancelOrderUsecase {}
 
 void main() {
   late MockCreateOrderUsecase mockCreate;
   late MockGetUserOrdersUsecase mockGetOrders;
   late MockGetOrderByIdUsecase mockGetById;
+  late MockCancelOrderUsecase mockCancel;
 
   final tCreatedAt = DateTime(2025, 6, 10);
   const tItem = OrderItemEntity(
@@ -36,6 +38,7 @@ void main() {
     createdAt: tCreatedAt,
   );
   const tParams = CreateOrderParams(
+    userId: 'user-1',
     items: [tItem],
     totalAmount: 450,
     deliveryAddress: 'Lalitpur, Bagmati',
@@ -47,12 +50,14 @@ void main() {
         createOrderUsecase: mockCreate,
         getUserOrdersUsecase: mockGetOrders,
         getOrderByIdUsecase: mockGetById,
+        cancelOrderUsecase: mockCancel,
       );
 
   setUp(() {
     mockCreate = MockCreateOrderUsecase();
     mockGetOrders = MockGetUserOrdersUsecase();
     mockGetById = MockGetOrderByIdUsecase();
+    mockCancel = MockCancelOrderUsecase();
     registerFallbackValue(tParams);
   });
 
@@ -96,6 +101,44 @@ void main() {
     expect(result, isNull);
     expect(vm.state.status, OrderLoadStatus.error);
     expect(vm.state.errorMessage, 'Server error');
+    expect(vm.state.currentOrder, isNull);
+  });
+
+  // ── Test 13: loadOrders failure → status error ────────────────────────────
+  test('loadOrders() failure → status error and errorMessage set', () async {
+    when(() => mockGetOrders())
+        .thenAnswer((_) async => const Left(tFailure));
+
+    final vm = makeVM();
+    await vm.loadOrders();
+
+    expect(vm.state.status, OrderLoadStatus.error);
+    expect(vm.state.errorMessage, 'Server error');
+    expect(vm.state.orders, isEmpty);
+  });
+
+  // ── Test 14: loadOrderById success → currentOrder set ─────────────────────
+  test('loadOrderById() success → currentOrder populated', () async {
+    when(() => mockGetById('order-42'))
+        .thenAnswer((_) async => Right(tOrder));
+
+    final vm = makeVM();
+    await vm.loadOrderById('order-42');
+
+    expect(vm.state.currentOrder, tOrder);
+    expect(vm.state.currentOrder!.id, 'order-42');
+    expect(vm.state.status, OrderLoadStatus.success);
+  });
+
+  // ── Test 15: loadOrderById failure → status error ─────────────────────────
+  test('loadOrderById() failure → status error', () async {
+    when(() => mockGetById(any()))
+        .thenAnswer((_) async => const Left(tFailure));
+
+    final vm = makeVM();
+    await vm.loadOrderById('bad-id');
+
+    expect(vm.state.status, OrderLoadStatus.error);
     expect(vm.state.currentOrder, isNull);
   });
 }

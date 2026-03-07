@@ -9,6 +9,9 @@ import 'package:quick_cart/features/cart/presentation/state/cart_state.dart';
 import 'package:quick_cart/features/cart/presentation/viewmodel/cart_viewmodel.dart';
 import 'package:quick_cart/features/products/domain/entities/product.dart';
 import 'package:quick_cart/features/products/presentation/viewmodel/product_viewmodel.dart';
+import 'package:quick_cart/features/products/presentation/state/product_state.dart';
+import 'package:quick_cart/features/wishlist/presentation/viewmodel/wishlist_viewmodel.dart';
+import 'package:quick_cart/features/products/presentation/viewmodel/recently_viewed_viewmodel.dart';
 
 // ─── CONSTANTS ──────────────────────────────────────────────────────────────
 
@@ -104,8 +107,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userName =
-        ref.watch(authViewModelProvider).user?.name ?? 'Guest';
+    final authUser = ref.watch(authViewModelProvider).user;
+    final userName = authUser?.name ?? 'Guest';
+    final profilePicture = authUser?.profilePicture;
     final cartState = ref.watch(cartViewModelProvider);
     final cartVM = ref.read(cartViewModelProvider.notifier);
     final cartCount = cartState.items.fold(0, (s, i) => s + i.quantity);
@@ -124,7 +128,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _Header(userName: userName, cartCount: cartCount),
+                _Header(userName: userName, cartCount: cartCount, profilePicture: profilePicture),
                 const SizedBox(height: 16),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -134,15 +138,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 _StatsRow(cartCount: cartCount),
                 const SizedBox(height: 24),
                 _CategoriesSection(
-                  onCategoryTap: () =>
-                      Navigator.pushNamed(context, AppRoutes.category),
+                  onCategoryTap: (categoryName) => Navigator.pushNamed(
+                      context, AppRoutes.category,
+                      arguments: categoryName),
                 ),
+                const SizedBox(height: 24),
+                _RecentlyViewedSection(),
                 const SizedBox(height: 24),
                 _PopularProductsSection(
                   cartState: cartState,
                   cartVM: cartVM,
                   products: productState.products,
                   isLoading: productState.isLoading,
+                  searchQuery: _searchController.text.trim(),
+                  sortOption: productState.sortOption,
                 ),
                 const SizedBox(height: 24),
               ],
@@ -209,11 +218,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 class _Header extends StatelessWidget {
   final String userName;
   final int cartCount;
+  final String? profilePicture;
 
-  const _Header({required this.userName, required this.cartCount});
+  const _Header({required this.userName, required this.cartCount, this.profilePicture});
 
   @override
   Widget build(BuildContext context) {
+    final avatarUrl = (profilePicture != null && profilePicture!.isNotEmpty)
+        ? ApiEndpoints.getImageUrl(profilePicture!)
+        : null;
+
     return Container(
       decoration: const BoxDecoration(
         gradient: _kGradient,
@@ -226,20 +240,44 @@ class _Header extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
                 children: [
-                  Text('Welcome back,',
-                      style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.85),
-                          fontSize: 14)),
-                  const SizedBox(height: 2),
-                  Text(userName,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.3)),
+                  GestureDetector(
+                    onTap: () => Navigator.pushNamed(context, AppRoutes.profile),
+                    child: CircleAvatar(
+                      radius: 24,
+                      backgroundColor: Colors.white.withValues(alpha: 0.35),
+                      backgroundImage: avatarUrl != null
+                          ? NetworkImage(avatarUrl)
+                          : null,
+                      child: avatarUrl == null
+                          ? Text(
+                              userName.isNotEmpty ? userName[0].toUpperCase() : 'G',
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold),
+                            )
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Welcome back,',
+                          style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              fontSize: 14)),
+                      const SizedBox(height: 2),
+                      Text(userName,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.3)),
+                    ],
+                  ),
                 ],
               ),
               GestureDetector(
@@ -399,20 +437,25 @@ class _StatCard extends StatelessWidget {
           Icon(icon, color: Colors.white, size: 28),
           const SizedBox(width: 10),
           Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(value,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold)),
-                Text(label,
-                    style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.85),
-                        fontSize: 11)),
-              ],
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(value,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold)),
+                  Text(label,
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.85),
+                          fontSize: 11)),
+                ],
+              ),
             ),
           ),
         ],
@@ -424,7 +467,7 @@ class _StatCard extends StatelessWidget {
 // ─── CATEGORIES ─────────────────────────────────────────────────────────────
 
 class _CategoriesSection extends StatelessWidget {
-  final VoidCallback onCategoryTap;
+  final void Function(String? categoryName) onCategoryTap;
   const _CategoriesSection({required this.onCategoryTap});
 
   @override
@@ -443,7 +486,7 @@ class _CategoriesSection extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       color: Colors.black87)),
               TextButton(
-                onPressed: onCategoryTap,
+                onPressed: () => onCategoryTap(null),
                 child: const Text('View All',
                     style: TextStyle(
                         color: _kOrange, fontWeight: FontWeight.w600)),
@@ -481,13 +524,13 @@ class _CategoriesSection extends StatelessWidget {
 
 class _CategoryCard extends StatelessWidget {
   final Map<String, String> item;
-  final VoidCallback onTap;
+  final void Function(String? categoryName) onTap;
   const _CategoryCard({required this.item, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () => onTap(item['text']),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -529,23 +572,152 @@ class _CategoryCard extends StatelessWidget {
   }
 }
 
+// ─── RECENTLY VIEWED ────────────────────────────────────────────────────────
+
+class _RecentlyViewedSection extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final items = ref.watch(recentlyViewedProvider);
+    if (items.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Recently Viewed',
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87)),
+              TextButton(
+                onPressed: () =>
+                    Navigator.pushNamed(context, AppRoutes.category),
+                child: const Text('See All',
+                    style: TextStyle(
+                        color: _kOrange, fontWeight: FontWeight.w600)),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 130,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: items.length,
+            itemBuilder: (ctx, i) {
+              final product = items[i];
+              final imageUrl = ApiEndpoints.getImageUrl(product.image);
+              return GestureDetector(
+                onTap: () => Navigator.pushNamed(
+                  ctx,
+                  AppRoutes.productDetails,
+                  arguments: product,
+                ),
+                child: Container(
+                  width: 100,
+                  margin: const EdgeInsets.only(right: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withAlpha(13),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(14)),
+                        child: SizedBox(
+                          height: 76,
+                          width: double.infinity,
+                          child: imageUrl.isNotEmpty
+                              ? Image.network(imageUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    color: Colors.grey.shade100,
+                                    child: const Icon(Icons.image,
+                                        color: Colors.grey, size: 28),
+                                  ))
+                              : Container(
+                                  color: Colors.grey.shade100,
+                                  child: const Icon(Icons.image,
+                                      color: Colors.grey, size: 28),
+                                ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
+                        child: Text(
+                          product.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 10, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: Text(
+                          'Rs.${product.price.toStringAsFixed(0)}',
+                          style: const TextStyle(
+                              fontSize: 10,
+                              color: _kOrange,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 // ─── POPULAR PRODUCTS ───────────────────────────────────────────────────────
 
-class _PopularProductsSection extends StatelessWidget {
+class _PopularProductsSection extends ConsumerWidget {
   final CartState cartState;
   final CartViewModel cartVM;
   final List<Product> products;
   final bool isLoading;
+  final String searchQuery;
+  final SortOption sortOption;
 
   const _PopularProductsSection({
     required this.cartState,
     required this.cartVM,
     required this.products,
     required this.isLoading,
+    required this.searchQuery,
+    required this.sortOption,
   });
 
+  static const _sortLabels = {
+    SortOption.none: 'Default',
+    SortOption.priceAsc: 'Price ↑',
+    SortOption.priceDesc: 'Price ↓',
+    SortOption.nameAsc: 'A–Z',
+    SortOption.ratingDesc: 'Top Rated',
+  };
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final displayProducts = products.length > 6 ? products.sublist(0, 6) : products;
 
     return Column(
@@ -571,17 +743,71 @@ class _PopularProductsSection extends StatelessWidget {
             ],
           ),
         ),
+        // Sort chips
+        SizedBox(
+          height: 38,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            children: SortOption.values.map((opt) {
+              final selected = sortOption == opt;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  label: Text(_sortLabels[opt] ?? ''),
+                  selected: selected,
+                  onSelected: (_) => ref
+                      .read(productViewModelProvider.notifier)
+                      .sortProducts(opt),
+                  selectedColor: _kOrange,
+                  checkmarkColor: Colors.white,
+                  labelStyle: TextStyle(
+                    color: selected ? Colors.white : Colors.black87,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(
+                      color: selected ? _kOrange : Colors.grey.shade300,
+                    ),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
         const SizedBox(height: 12),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: isLoading
               ? _buildLoadingGrid()
               : products.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Padding(
-                        padding: EdgeInsets.all(32),
-                        child: Text('No products available',
-                            style: TextStyle(color: Colors.grey)),
+                        padding: const EdgeInsets.all(32),
+                        child: Column(
+                          children: [
+                            Icon(
+                              searchQuery.isNotEmpty
+                                  ? Icons.search_off_rounded
+                                  : Icons.inventory_2_outlined,
+                              size: 56,
+                              color: Colors.grey.shade300,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              searchQuery.isNotEmpty
+                                  ? 'No results for "$searchQuery"'
+                                  : 'No products available',
+                              style: TextStyle(
+                                  color: Colors.grey.shade500, fontSize: 14),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
                       ),
                     )
                   : GridView.builder(
@@ -637,7 +863,7 @@ class _PopularProductsSection extends StatelessWidget {
   }
 }
 
-class _ProductCard extends StatelessWidget {
+class _ProductCard extends ConsumerWidget {
   final Product product;
   final bool inCart;
   final VoidCallback onAdd;
@@ -651,7 +877,9 @@ class _ProductCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isWishlisted = ref.watch(wishlistViewModelProvider
+        .select((list) => list.any((p) => p.id == product.id)));
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -669,32 +897,79 @@ class _ProductCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Hero(
-                tag: 'product-image-${product.id}',
-                child: ClipRRect(
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(16)),
-                  child: Container(
-                    width: double.infinity,
-                    color: const Color(0xFFF9F9F9),
-                    padding: const EdgeInsets.all(12),
-                    child: Image.network(
-                      ApiEndpoints.getImageUrl(product.image),
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) =>
-                          const Icon(Icons.image, color: Colors.grey, size: 40),
-                      loadingBuilder: (_, child, progress) => progress == null
-                          ? child
-                          : const Center(
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(_kOrange),
+              child: Stack(
+                children: [
+                  Hero(
+                    tag: 'product-image-${product.id}',
+                    child: ClipRRect(
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(16)),
+                      child: Container(
+                        width: double.infinity,
+                        color: const Color(0xFFF9F9F9),
+                        padding: const EdgeInsets.all(12),
+                        child: ApiEndpoints.isNetworkImage(product.image)
+                            ? Image.network(
+                                ApiEndpoints.getImageUrl(product.image),
+                                fit: BoxFit.contain,
+                                errorBuilder: (_, __, ___) => const Icon(
+                                    Icons.image,
+                                    color: Colors.grey,
+                                    size: 40),
+                                loadingBuilder: (_, child, progress) =>
+                                    progress == null
+                                        ? child
+                                        : const Center(
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                      _kOrange),
+                                            ),
+                                          ),
+                              )
+                            : Image.asset(
+                                ApiEndpoints.getAssetImagePath(product.image),
+                                fit: BoxFit.contain,
+                                errorBuilder: (_, __, ___) => const Icon(
+                                    Icons.image,
+                                    color: Colors.grey,
+                                    size: 40),
                               ),
-                            ),
+                      ),
                     ),
                   ),
-                ),
+                  // Wishlist heart
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: GestureDetector(
+                      onTap: () => ref
+                          .read(wishlistViewModelProvider.notifier)
+                          .toggle(product),
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(26),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          isWishlisted
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border_rounded,
+                          color: isWishlisted ? Colors.red : Colors.grey,
+                          size: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             Padding(

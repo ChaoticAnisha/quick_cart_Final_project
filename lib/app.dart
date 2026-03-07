@@ -20,8 +20,10 @@ import 'features/orders/presentation/pages/orders_screen.dart';
 import 'features/orders/presentation/pages/order_details_screen.dart';
 import 'features/orders/domain/entities/order_entity.dart';
 import 'features/checkout/presentation/pages/checkout_screen.dart';
+import 'features/checkout/presentation/pages/map_picker_screen.dart';
 import 'features/checkout/presentation/pages/order_confirmation_screen.dart';
 import 'features/sensors/presentation/pages/sensor_screen.dart';
+import 'features/wishlist/presentation/pages/wishlist_screen.dart';
 
 class App extends ConsumerWidget {
   const App({super.key});
@@ -85,7 +87,9 @@ class App extends ConsumerWidget {
         AppRoutes.editProfile: (context) => const EditProfileScreen(),
         AppRoutes.orders: (context) => const OrdersScreen(),
         AppRoutes.checkout: (context) => const CheckoutScreen(),
+        AppRoutes.mapPicker: (context) => const MapPickerScreen(),
         AppRoutes.sensors: (context) => const SensorScreen(),
+        AppRoutes.wishlist: (context) => const WishlistScreen(),
       },
       onGenerateRoute: (settings) {
         switch (settings.name) {

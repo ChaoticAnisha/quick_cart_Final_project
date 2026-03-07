@@ -4,7 +4,10 @@ class AppBoxes {
   static const String sessionBox = 'session_box';
   static const String cartBox = 'cart_box';
   static const String productBox = 'product_box';
+  static const String categoryBox = 'category_box';
   static const String orderBox = 'order_box';
+  static const String wishlistBox = 'wishlist_box';
+  static const String recentlyViewedBox = 'recently_viewed_box';
 
   // Hive TypeAdapter type IDs
   static const int userHiveModelTypeId = 0;

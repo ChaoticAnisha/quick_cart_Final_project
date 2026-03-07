@@ -4,6 +4,7 @@ import '../../../../core/constants/app_routes.dart';
 import '../../../auth/presentation/viewmodel/auth_viewmodel.dart';
 import '../../../cart/presentation/viewmodel/cart_viewmodel.dart';
 import '../viewmodel/checkout_viewmodel.dart';
+import 'map_picker_screen.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -24,7 +25,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   void initState() {
     super.initState();
     final user = ref.read(authViewModelProvider).user;
-    if (user != null) _nameCtrl.text = user.name;
+    if (user != null) {
+      _nameCtrl.text = user.name;
+      if (user.phone != null) _phoneCtrl.text = user.phone!;
+      if (user.address != null) _addressCtrl.text = user.address!;
+    }
   }
 
   @override
@@ -174,7 +179,36 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         const SizedBox(height: 12),
         _field(_addressCtrl, 'Full Address', Icons.home_outlined,
             required: true, maxLines: 2),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton.icon(
+            onPressed: () async {
+              final result = await Navigator.push<MapPickerResult>(
+                context,
+                MaterialPageRoute(builder: (_) => const MapPickerScreen()),
+              );
+              if (result != null && mounted) {
+                _addressCtrl.text = result.address;
+                if (result.city.isNotEmpty) _cityCtrl.text = result.city;
+                if (result.postcode.isNotEmpty) _pincodeCtrl.text = result.postcode;
+              }
+            },
+            icon: const Icon(Icons.map_outlined, size: 18, color: Color(0xFFFFA500)),
+            label: const Text(
+              'Pick on Map',
+              style: TextStyle(color: Color(0xFFFFA500), fontWeight: FontWeight.w600),
+            ),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+                side: const BorderSide(color: Color(0xFFFFA500)),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
@@ -291,7 +325,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       child: SizedBox(
         width: double.infinity,
         height: 54,
-        child: ElevatedButton.icon(
+        child: ElevatedButton(
           onPressed: isPlacing ? null : _placeOrder,
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFFFFA500),
@@ -299,23 +333,30 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             elevation: 4,
           ),
-          icon: isPlacing
-              ? const SizedBox(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (isPlacing)
+                const SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor:
                           AlwaysStoppedAnimation<Color>(Colors.white)))
-              : const Icon(Icons.check_circle_outline, color: Colors.white),
-          label: Text(
-            isPlacing
-                ? 'Placing Order...'
-                : 'Place Order — ₹${total.toStringAsFixed(0)}',
-            style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white),
+              else
+                const Icon(Icons.check_circle_outline, color: Colors.white),
+              const SizedBox(width: 8),
+              Text(
+                isPlacing
+                    ? 'Placing Order...'
+                    : 'Place Order — ₹${total.toStringAsFixed(0)}',
+                style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
+            ],
           ),
         ),
       ),

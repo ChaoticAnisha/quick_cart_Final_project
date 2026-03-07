@@ -10,6 +10,8 @@ import 'package:quick_cart/features/products/domain/entities/product.dart';
 import 'package:quick_cart/features/products/presentation/state/product_state.dart';
 import 'package:quick_cart/features/products/presentation/viewmodel/product_viewmodel.dart';
 import 'package:quick_cart/features/dashboard/presentation/pages/dashboard_screen.dart';
+import 'package:quick_cart/features/products/presentation/viewmodel/recently_viewed_viewmodel.dart';
+import 'package:quick_cart/features/wishlist/presentation/viewmodel/wishlist_viewmodel.dart';
 import 'helpers/test_helpers.dart';
 
 void main() {
@@ -48,6 +50,12 @@ void main() {
         ),
         productViewModelProvider.overrideWith(
           (ref) => FakeProductViewModel(productState),
+        ),
+        wishlistViewModelProvider.overrideWith(
+          (ref) => FakeWishlistViewModel(),
+        ),
+        recentlyViewedProvider.overrideWith(
+          (ref) => FakeRecentlyViewedViewModel(),
         ),
       ];
 

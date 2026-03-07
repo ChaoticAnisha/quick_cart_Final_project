@@ -4,6 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../api/api_endpoints.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../cart/presentation/viewmodel/cart_viewmodel.dart';
+import '../../../wishlist/presentation/viewmodel/wishlist_viewmodel.dart';
+import '../viewmodel/recently_viewed_viewmodel.dart';
 import '../../domain/entities/product.dart';
 
 class ProductDetailsScreen extends ConsumerStatefulWidget {
@@ -37,6 +39,13 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen>
     _btnScale = Tween(begin: 1.0, end: 0.95).animate(
       CurvedAnimation(parent: _btnAnim, curve: Curves.easeInOut),
     );
+    Future.microtask(() {
+      if (mounted) {
+        ref
+            .read(recentlyViewedProvider.notifier)
+            .track(widget.product);
+      }
+    });
   }
 
   @override
@@ -101,6 +110,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen>
             .firstWhere((i) => i.productId == product.id)
             .quantity
         : 0;
+    final isWishlisted = ref.watch(wishlistViewModelProvider
+        .select((list) => list.any((p) => p.id == product.id)));
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -122,8 +133,28 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen>
               ),
             ),
             actions: [
+              // Wishlist heart
               Padding(
                 padding: const EdgeInsets.all(8),
+                child: GestureDetector(
+                  onTap: () => ref
+                      .read(wishlistViewModelProvider.notifier)
+                      .toggle(product),
+                  child: CircleAvatar(
+                    backgroundColor: Colors.white.withValues(alpha: 0.9),
+                    child: Icon(
+                      isWishlisted
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
+                      color: isWishlisted ? Colors.red : Colors.black87,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+              // Cart
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
                 child: GestureDetector(
                   onTap: () => Navigator.pushNamed(context, AppRoutes.cart),
                   child: CircleAvatar(
@@ -168,30 +199,44 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen>
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Hero(
-                    tag: 'product-image-${product.id}',
-                    child: CachedNetworkImage(
-                      imageUrl: ApiEndpoints.getImageUrl(product.image),
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
-                        color: const Color(0xFFF0F0F0),
-                        child: const Center(
-                          child: CircularProgressIndicator(color: _orange),
-                        ),
-                      ),
-                      errorWidget: (_, __, ___) => Container(
-                        color: const Color(0xFFF0F0F0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.image_outlined,
-                                size: 64, color: Colors.grey[400]),
-                            const SizedBox(height: 8),
-                            Text('No image',
-                                style: TextStyle(color: Colors.grey[400])),
-                          ],
-                        ),
-                      ),
+                  InteractiveViewer(
+                    maxScale: 4.0,
+                    child: Hero(
+                      tag: 'product-image-${product.id}',
+                      child: ApiEndpoints.isNetworkImage(product.image)
+                          ? CachedNetworkImage(
+                              imageUrl: ApiEndpoints.getImageUrl(product.image),
+                              fit: BoxFit.cover,
+                              placeholder: (_, __) => Container(
+                                color: const Color(0xFFF0F0F0),
+                                child: const Center(
+                                  child: CircularProgressIndicator(color: _orange),
+                                ),
+                              ),
+                              errorWidget: (_, __, ___) => Container(
+                                color: const Color(0xFFF0F0F0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.image_outlined,
+                                        size: 64, color: Colors.grey[400]),
+                                    const SizedBox(height: 8),
+                                    Text('No image',
+                                        style:
+                                            TextStyle(color: Colors.grey[400])),
+                                  ],
+                                ),
+                              ),
+                            )
+                          : Image.asset(
+                              ApiEndpoints.getAssetImagePath(product.image),
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                color: const Color(0xFFF0F0F0),
+                                child: Icon(Icons.image_outlined,
+                                    size: 64, color: Colors.grey[400]),
+                              ),
+                            ),
                     ),
                   ),
                   // Bottom gradient for readability

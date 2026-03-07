@@ -1,11 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../api/api_client.dart';
 import '../../../../api/api_endpoints.dart';
 import '../../../../core/constants/app_routes.dart';
 import '../../../../core/services/camera_service.dart';
 import '../../../../core/theme/theme_notifier.dart';
 import '../../../auth/presentation/viewmodel/auth_viewmodel.dart';
+import '../../../auth/presentation/viewmodel/profile_viewmodel.dart';
 import '../../../auth/domain/entities/user.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -19,6 +23,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _isEditing = false;
   bool _isSaving = false;
   bool _isUploadingPhoto = false;
+  bool _infoExpanded = false;
   final int _selectedIndex = 3;
 
   File? _selectedImage;
@@ -57,18 +62,49 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         _selectedImage = file;
         _isUploadingPhoto = true;
       });
-      // Simulate upload delay (real upload would use ApiClient.uploadImage)
-      await Future.delayed(const Duration(milliseconds: 800));
-      if (mounted) {
-        setState(() => _isUploadingPhoto = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profile photo updated!'),
-            backgroundColor: Color(0xFF4CAF50),
-            behavior: SnackBarBehavior.floating,
-            duration: Duration(seconds: 2),
-          ),
+      try {
+        final currentUser = ref.read(authViewModelProvider).user;
+        if (currentUser == null) return;
+        final prefs = await SharedPreferences.getInstance();
+        final apiClient = ApiClient(prefs);
+        final xFile = XFile(file.path);
+        final data = await apiClient.uploadImage(
+          ApiEndpoints.userAvatar(currentUser.id),
+          xFile,
+          fieldName: 'avatar',
         );
+
+        // Backend returns: { avatar: "/uploads/avatar_xxx.jpg", user: { avatar: ... } }
+        final newPicture = data['avatar'] as String? ??
+            (data['user'] as Map?)?['avatar'] as String?;
+
+        if (mounted) {
+          if (newPicture != null) {
+            ref.read(authViewModelProvider.notifier).updateUser(
+                  currentUser.copyWith(profilePicture: newPicture),
+                );
+          }
+          setState(() => _isUploadingPhoto = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Profile photo updated!'),
+              backgroundColor: Color(0xFF4CAF50),
+              behavior: SnackBarBehavior.floating,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isUploadingPhoto = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to upload photo: $e'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
       }
     }
   }
@@ -140,39 +176,40 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
-    await Future.delayed(const Duration(milliseconds: 800));
 
-    final currentUser = ref.read(authViewModelProvider).user;
-    if (currentUser != null) {
-      final updated = User(
-        id: currentUser.id,
+    try {
+      await ref.read(profileViewModelProvider.notifier).updateProfile(
         name: _nameCtrl.text.trim(),
-        email: currentUser.email,
-        phone: _phoneCtrl.text.trim().isEmpty
-            ? currentUser.phone
-            : _phoneCtrl.text.trim(),
-        address: _addressCtrl.text.trim().isEmpty
-            ? currentUser.address
-            : _addressCtrl.text.trim(),
-        profilePicture: currentUser.profilePicture,
+        phone: _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
+        address: _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
       );
-      ref.read(authViewModelProvider.notifier).updateUser(updated);
-    }
 
-    setState(() {
-      _isSaving = false;
-      _isEditing = false;
-    });
+      setState(() {
+        _isSaving = false;
+        _isEditing = false;
+      });
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profile updated successfully!'),
-          backgroundColor: Color(0xFF4CAF50),
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile updated successfully!'),
+            backgroundColor: Color(0xFF4CAF50),
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() => _isSaving = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
@@ -239,6 +276,38 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     final user = ref.watch(authViewModelProvider).user;
 
+    if (user == null) {
+      return Scaffold(
+        body: SafeArea(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.person_outline, size: 72, color: Colors.grey),
+                const SizedBox(height: 16),
+                const Text(
+                  'Please sign in to view your profile',
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => Navigator.pushReplacementNamed(
+                      context, AppRoutes.login),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFA500),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Sign In',
+                      style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     final isDarkTheme = ref.watch(themeNotifierProvider) == ThemeMode.dark;
     return Scaffold(
       backgroundColor:
@@ -282,29 +351,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         : (user?.profilePicture != null && user!.profilePicture!.isNotEmpty
             ? ApiEndpoints.getImageUrl(user.profilePicture!)
             : null);
+    final isDark = ref.watch(themeNotifierProvider) == ThemeMode.dark;
 
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-        ),
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
       child: Column(
         children: [
           // Avatar
           Stack(
+            clipBehavior: Clip.none,
             children: [
               Container(
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
+                      color: Colors.black.withValues(alpha: 0.12),
                       blurRadius: 16,
                       spreadRadius: 2,
                     ),
@@ -350,61 +414,52 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                   ),
                 ),
-              Positioned(
-                bottom: 2,
-                right: 2,
-                child: GestureDetector(
-                  onTap: _showImageSourceSheet,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                          color: const Color(0xFFFFA500), width: 2),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.15),
-                          blurRadius: 6,
-                        ),
-                      ],
-                    ),
-                    child: const Icon(Icons.camera_alt,
-                        size: 16, color: Color(0xFFFFA500)),
-                  ),
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 14),
+          // Name
           Text(
-            user?.name ?? 'Guest User',
-            style: const TextStyle(
-              fontSize: 22,
+            user?.name ?? '',
+            style: TextStyle(
+              fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: isDark ? Colors.white : Colors.black87,
+              letterSpacing: 0.2,
             ),
           ),
-          const SizedBox(height: 4),
-          Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(20),
+          if (user?.email != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              user!.email,
+              style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.email_outlined,
-                    size: 14, color: Colors.white),
-                const SizedBox(width: 6),
-                Text(
-                  user?.email ?? '',
-                  style: const TextStyle(
-                      fontSize: 13, color: Colors.white),
-                ),
-              ],
+          ],
+          const SizedBox(height: 12),
+          // Edit photo button
+          GestureDetector(
+            onTap: _showImageSourceSheet,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF8DC),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFFFA500)),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.camera_alt, size: 14, color: Color(0xFFFFA500)),
+                  SizedBox(width: 6),
+                  Text(
+                    'Edit Photo',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFFFA500),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -510,58 +565,97 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       child: Column(
         children: [
-          // Card header
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Personal Information',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+          // Tappable header row — toggles expand/collapse
+          InkWell(
+            onTap: () => setState(() {
+              _infoExpanded = !_infoExpanded;
+              if (!_infoExpanded) _isEditing = false;
+            }),
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF8DC),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.person_outline,
+                        color: Color(0xFFFFA500), size: 18),
                   ),
-                ),
-                if (!_isEditing)
-                  GestureDetector(
-                    onTap: () => setState(() => _isEditing = true),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFF8DC),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: const Color(0xFFFFA500)),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.edit_outlined,
-                              size: 14, color: Color(0xFFFFA500)),
-                          SizedBox(width: 4),
-                          Text(
-                            'Edit',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFFFFA500),
-                            ),
-                          ),
-                        ],
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Personal Information',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
                       ),
                     ),
                   ),
-              ],
+                  AnimatedRotation(
+                    turns: _infoExpanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 250),
+                    child: Icon(Icons.keyboard_arrow_down_rounded,
+                        color: Colors.grey.shade500, size: 22),
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 4),
-          const Divider(indent: 16, endIndent: 16),
-          // Fields
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-            child: _isEditing ? _buildEditForm() : _buildViewMode(user),
+          // Collapsible body
+          AnimatedCrossFade(
+            firstChild: const SizedBox(width: double.infinity),
+            secondChild: Column(
+              children: [
+                Divider(height: 1, indent: 16, endIndent: 16, color: Colors.grey.shade100),
+                // Edit button row
+                if (!_isEditing)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: GestureDetector(
+                        onTap: () => setState(() => _isEditing = true),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF8DC),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: const Color(0xFFFFA500)),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.edit_outlined,
+                                  size: 14, color: Color(0xFFFFA500)),
+                              SizedBox(width: 4),
+                              Text('Edit',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFFFFA500),
+                                  )),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+                  child: _isEditing ? _buildEditForm() : _buildViewMode(user),
+                ),
+              ],
+            ),
+            crossFadeState: _infoExpanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 250),
           ),
         ],
       ),
@@ -846,13 +940,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             label: 'Sensor Demo',
             subtitle: 'Shake & tilt detection',
             onTap: () => Navigator.pushNamed(context, AppRoutes.sensors),
-          ),
-          _divider(),
-          _optionTile(
-            icon: Icons.help_outline,
-            label: 'Help & Support',
-            subtitle: 'Get help and contact us',
-            onTap: () => _comingSoon('Help & Support'),
             isLast: true,
           ),
         ],
@@ -942,19 +1029,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             color: Colors.red.shade600,
           ),
         ),
-      ),
-    );
-  }
-
-  void _comingSoon(String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$feature coming soon!'),
-        backgroundColor: const Color(0xFFFFA500),
-        behavior: SnackBarBehavior.floating,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        duration: const Duration(seconds: 2),
       ),
     );
   }

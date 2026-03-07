@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../data/repositories/profile_repository_impl.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/profile_repository.dart';
@@ -17,7 +16,6 @@ final profileViewModelProvider =
 class ProfileViewModel extends StateNotifier<AsyncValue<User?>> {
   final ProfileRepository _profileRepository;
   final Ref _ref;
-  final ImagePicker _imagePicker = ImagePicker();
 
   ProfileViewModel(this._profileRepository, this._ref)
     : super(const AsyncValue.loading());
@@ -56,26 +54,5 @@ class ProfileViewModel extends StateNotifier<AsyncValue<User?>> {
     }
   }
 
-  Future<void> updateProfilePicture({required ImageSource source}) async {
-    try {
-      final XFile? image = await _imagePicker.pickImage(
-        source: source,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 85,
-      );
 
-      if (image == null) return;
-
-      final user = await _profileRepository.updateProfilePicture(image);
-
-      state = AsyncValue.data(user);
-
-      // Update auth state as well
-      _ref.read(authViewModelProvider.notifier).updateUser(user);
-    } catch (e, stack) {
-      state = AsyncValue.error(e, stack);
-      rethrow;
-    }
-  }
 }

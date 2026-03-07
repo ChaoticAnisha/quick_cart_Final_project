@@ -337,15 +337,25 @@ class _CartWithItemsScreenState extends ConsumerState<_CartWithItemsScreen> {
             ),
             padding: const EdgeInsets.all(8),
             child: item.image != null && item.image!.isNotEmpty
-                ? Image.network(
-                    ApiEndpoints.getImageUrl(item.image!),
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => const Icon(
-                      Icons.shopping_bag_outlined,
-                      color: Color(0xFFFFA500),
-                      size: 32,
-                    ),
-                  )
+                ? (ApiEndpoints.isNetworkImage(item.image!)
+                    ? Image.network(
+                        ApiEndpoints.getImageUrl(item.image!),
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.shopping_bag_outlined,
+                          color: Color(0xFFFFA500),
+                          size: 32,
+                        ),
+                      )
+                    : Image.asset(
+                        ApiEndpoints.getAssetImagePath(item.image!),
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.shopping_bag_outlined,
+                          color: Color(0xFFFFA500),
+                          size: 32,
+                        ),
+                      ))
                 : const Icon(
                     Icons.shopping_bag_outlined,
                     color: Color(0xFFFFA500),

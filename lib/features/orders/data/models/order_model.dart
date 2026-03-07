@@ -21,7 +21,7 @@ class OrderItemModel extends OrderItemEntity {
       image = productRaw['image']?.toString();
     } else {
       productId = json['productId']?.toString() ?? '';
-      productName = json['productName']?.toString() ?? '';
+      productName = json['name']?.toString() ?? json['productName']?.toString() ?? '';
       image = json['image']?.toString();
     }
 

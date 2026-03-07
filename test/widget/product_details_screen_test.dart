@@ -1,8 +1,11 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quick_cart/features/cart/presentation/state/cart_state.dart';
 import 'package:quick_cart/features/cart/presentation/viewmodel/cart_viewmodel.dart';
 import 'package:quick_cart/features/products/domain/entities/product.dart';
 import 'package:quick_cart/features/products/presentation/pages/product_details_screen.dart';
+import 'package:quick_cart/features/products/presentation/viewmodel/recently_viewed_viewmodel.dart';
+import 'package:quick_cart/features/wishlist/presentation/viewmodel/wishlist_viewmodel.dart';
 import 'helpers/test_helpers.dart';
 
 void main() {
@@ -30,17 +33,25 @@ void main() {
     image: '',
   );
 
+  List<Override> baseOverrides() => [
+        cartViewModelProvider.overrideWith(
+          (ref) => FakeCartViewModel(const CartState()),
+        ),
+        wishlistViewModelProvider.overrideWith(
+          (ref) => FakeWishlistViewModel(),
+        ),
+        recentlyViewedProvider.overrideWith(
+          (ref) => FakeRecentlyViewedViewModel(),
+        ),
+      ];
+
   group('ProductDetailsScreen Widget Tests', () {
     // ── Test 12: shows product name ───────────────────────────────────────
     testWidgets('shows product name', (tester) async {
       await pumpScreen(
         tester,
         ProductDetailsScreen(product: tProduct),
-        overrides: [
-          cartViewModelProvider.overrideWith(
-            (ref) => FakeCartViewModel(const CartState()),
-          ),
-        ],
+        overrides: baseOverrides(),
       );
       await tester.pump();
 
@@ -52,11 +63,7 @@ void main() {
       await pumpScreen(
         tester,
         ProductDetailsScreen(product: tProduct),
-        overrides: [
-          cartViewModelProvider.overrideWith(
-            (ref) => FakeCartViewModel(const CartState()),
-          ),
-        ],
+        overrides: baseOverrides(),
       );
       await tester.pump();
 
@@ -70,11 +77,7 @@ void main() {
       await pumpScreen(
         tester,
         ProductDetailsScreen(product: tOutOfStockProduct),
-        overrides: [
-          cartViewModelProvider.overrideWith(
-            (ref) => FakeCartViewModel(const CartState()),
-          ),
-        ],
+        overrides: baseOverrides(),
       );
       await tester.pump();
 

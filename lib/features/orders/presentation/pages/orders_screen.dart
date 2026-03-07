@@ -301,7 +301,16 @@ class _OrderCard extends StatelessWidget {
                   '₹${order.totalAmount.toStringAsFixed(0)}',
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFFFA500)),
                 ),
-                const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey),
+                Row(
+                  children: [
+                    Text(
+                      order.paymentMethod.toUpperCase(),
+                      style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
+                    ),
+                    const SizedBox(width: 6),
+                    const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey),
+                  ],
+                ),
               ],
             ),
           ],

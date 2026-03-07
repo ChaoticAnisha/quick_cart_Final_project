@@ -1,12 +1,15 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
+import '../../../../core/constants/app_boxes.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/auth_entities.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_datasource.dart';
 import '../datasources/local/auth_local_datasource.dart';
+import '../models/user_hive_model.dart';
 
 final authRepositoryImplProvider = Provider<IAuthRepository>((ref) {
   return AuthRepositoryImpl(
@@ -39,16 +42,15 @@ class AuthRepositoryImpl implements IAuthRepository {
       );
 
       final userData = response.data;
-      final token = userData['token'];
+      final token = userData['token'] ?? '';
+      final user = userData['user'] ?? userData['data'] ?? userData;
 
-      if (token != null) {
-        await _authLocalDataSource.saveUserSession(
-          token: token,
-          userId: userData['user']['id'] ?? '',
-          email: userData['user']['email'],
-          name: userData['user']['name'],
-        );
-      }
+      await _authLocalDataSource.saveUserSession(
+        token: token,
+        userId: user['id'] ?? user['_id'] ?? '',
+        email: user['email'] ?? '',
+        name: user['name'] ?? '',
+      );
 
       return const Right(true);
     } on DioException catch (e) {
@@ -75,28 +77,40 @@ class AuthRepositoryImpl implements IAuthRepository {
       );
 
       final userData = response.data;
-      final token = userData['token'];
-      final user = userData['user'];
+      final token = userData['token'] ?? '';
+      // Backend returns user under 'user' or 'data' key
+      final user = userData['user'] ?? userData['data'] ?? userData;
 
-      if (token != null) {
-        await _authLocalDataSource.saveUserSession(
-          token: token,
-          userId: user['id'] ?? user['_id'] ?? '',
-          email: user['email'],
-          name: user['name'],
-        );
-      }
+      await _authLocalDataSource.saveUserSession(
+        token: token,
+        userId: user['id'] ?? user['_id'] ?? '',
+        email: user['email'] ?? '',
+        name: user['name'] ?? '',
+      );
 
-      return Right(
-        AuthEntity(
-          id: user['id'] ?? user['_id'],
-          name: user['name'],
-          email: user['email'],
-          phone: user['phone'],
-          address: user['address'],
-          profilePicture: user['profilePicture'],
+      final entity = AuthEntity(
+        id: user['id'] ?? user['_id'],
+        name: user['name'],
+        email: user['email'],
+        phone: user['phone'],
+        address: user['address'],
+        profilePicture: user['profilePicture'] ?? user['avatar'],
+      );
+
+      // Cache user in Hive for offline access
+      await Hive.box<UserHiveModel>(AppBoxes.userBox).put(
+        'current',
+        UserHiveModel(
+          id: entity.id ?? '',
+          name: entity.name,
+          email: entity.email,
+          phone: entity.phone,
+          address: entity.address,
+          profilePicture: entity.profilePicture,
         ),
       );
+
+      return Right(entity);
     } on DioException catch (e) {
       return Left(
         ApiFailure(
@@ -131,29 +145,49 @@ class AuthRepositoryImpl implements IAuthRepository {
 
   @override
   Future<Either<Failure, AuthEntity>> getCurrentUser() async {
+    final userBox = Hive.box<UserHiveModel>(AppBoxes.userBox);
     try {
       final response = await _authRemoteDataSource.getProfile();
-      final user = response.data;
+      final rawData = response.data;
+      final user = rawData['user'] ?? rawData;
 
-      return Right(
-        AuthEntity(
-          id: user['id'] ?? user['_id'],
-          name: user['name'],
-          email: user['email'],
-          phone: user['phone'],
-          address: user['address'],
-          profilePicture: user['profilePicture'],
+      final entity = AuthEntity(
+        id: user['id'] ?? user['_id'],
+        name: user['name'],
+        email: user['email'],
+        phone: user['phone'],
+        address: user['address'],
+        profilePicture: user['profilePicture'] ?? user['avatar'],
+      );
+
+      // Cache user in Hive for offline access
+      await userBox.put(
+        'current',
+        UserHiveModel(
+          id: entity.id ?? '',
+          name: entity.name,
+          email: entity.email,
+          phone: entity.phone,
+          address: entity.address,
+          profilePicture: entity.profilePicture,
         ),
       );
-    } on DioException catch (e) {
-      return Left(
-        ApiFailure(
-          message: e.response?.data['message'] ?? 'Failed to fetch user',
-          statusCode: e.response?.statusCode,
-        ),
-      );
-    } catch (e) {
-      return Left(ApiFailure(message: e.toString()));
+
+      return Right(entity);
+    } catch (_) {
+      // Offline fallback — return cached user from Hive
+      final cached = userBox.get('current');
+      if (cached != null) {
+        return Right(AuthEntity(
+          id: cached.id,
+          name: cached.name,
+          email: cached.email,
+          phone: cached.phone,
+          address: cached.address,
+          profilePicture: cached.profilePicture,
+        ));
+      }
+      return const Left(ApiFailure(message: 'No cached user found'));
     }
   }
 

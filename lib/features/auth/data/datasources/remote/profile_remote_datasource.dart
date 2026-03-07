@@ -1,30 +1,20 @@
-import 'package:dio/dio.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../../api/api_client.dart';
 import '../../../../../api/api_endpoints.dart';
-import '../../../../../core/services/storage/session_service.dart';
+import '../../../../../core/constants/app_constants.dart';
 import '../../models/auth_api_model.dart';
 
 class ProfileRemoteDataSource {
-  final Dio _dio;
-  final SessionService _sessionService;
-
-  ProfileRemoteDataSource({Dio? dio, SessionService? sessionService})
-    : _dio = dio ?? Dio(),
-      _sessionService = sessionService ?? SessionService();
+  Future<(ApiClient, String)> _getClientAndUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString(AppConstants.keyUserId) ?? '';
+    return (ApiClient(prefs), userId);
+  }
 
   Future<AuthResponseModel> getProfile() async {
-    try {
-      final token = await _sessionService.getToken();
-
-      final response = await _dio.get(
-        ApiEndpoints.getProfile,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
-
-      return AuthResponseModel.fromJson(response.data);
-    } catch (e) {
-      throw Exception('Failed to get profile: $e');
-    }
+    final (client, userId) = await _getClientAndUserId();
+    final response = await client.get(ApiEndpoints.userById(userId));
+    return AuthResponseModel.fromJson(response.data);
   }
 
   Future<AuthResponseModel> updateProfile({
@@ -32,55 +22,13 @@ class ProfileRemoteDataSource {
     String? phone,
     String? address,
   }) async {
-    try {
-      final token = await _sessionService.getToken();
+    final (client, userId) = await _getClientAndUserId();
+    final Map<String, dynamic> data = {};
+    if (name != null) data['name'] = name;
+    if (phone != null) data['phone'] = phone;
+    if (address != null) data['address'] = address;
 
-      final Map<String, dynamic> data = {};
-      if (name != null) data['name'] = name;
-      if (phone != null) data['phone'] = phone;
-      if (address != null) data['address'] = address;
-
-      final response = await _dio.put(
-        ApiEndpoints.updateProfile,
-        data: data,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
-
-      return AuthResponseModel.fromJson(response.data);
-    } catch (e) {
-      throw Exception('Failed to update profile: $e');
-    }
+    final response = await client.put(ApiEndpoints.userById(userId), data: data);
+    return AuthResponseModel.fromJson(response.data);
   }
-
-  Future<AuthResponseModel> updateProfilePicture(XFile image) async {
-    try {
-      final token = await _sessionService.getToken();
-
-      // Read image bytes
-      final bytes = await image.readAsBytes();
-
-      FormData formData = FormData.fromMap({
-        'profilePicture': MultipartFile.fromBytes(bytes, filename: image.name),
-      });
-
-      final response = await _dio.post(
-        ApiEndpoints.updateProfilePicture,
-        data: formData,
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'multipart/form-data',
-          },
-        ),
-      );
-
-      return AuthResponseModel.fromJson(response.data);
-    } catch (e) {
-      throw Exception('Failed to update profile picture: $e');
-    }
-  }
-}
-
-class SessionService {
-  Future<dynamic> getToken() async {}
 }
