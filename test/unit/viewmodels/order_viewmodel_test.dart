@@ -61,7 +61,7 @@ void main() {
     registerFallbackValue(tParams);
   });
 
-  // ── Test 10: loadOrders success → state has orders ────────────────────────
+  // Test 10: loadOrders success → state has orders 
   test('loadOrders() success → status success and orders populated', () async {
     when(() => mockGetOrders()).thenAnswer((_) async => Right([tOrder]));
 
